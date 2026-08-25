@@ -1,0 +1,33 @@
+root = true
+
+# すべてのファイルに適用
+[*]
+
+# 文字コードを UTF-8 に統一
+charset = utf-8
+
+# 改行コードを LF に統一
+# Linux / Git / Docker / Node.js 系と相性が良い
+end_of_line = lf
+
+# ファイル末尾に改行を入れる
+insert_final_newline = true
+
+# インデントをスペースにする
+indent_style = space
+
+# インデント幅を 4 スペースにする
+indent_size = 4
+
+# 行末の不要なスペースを自動削除
+trim_trailing_whitespace = true
+
+# Markdown ファイルのみ対象
+[*.md]
+
+# Markdown は 2 スペースインデント
+indent_size = 2
+
+# 行末のスペースを削除しない
+trim_trailing_whitespace = false
+
