@@ -1,0 +1,24 @@
+# =========================================================
+# docker/common/Dockerfile.base
+#
+# dev / prod 共通のベースイメージ。
+# Node のバージョンや共通パッケージ、共通ENVなど「変わらない部分」だけをここに書く。
+#
+# ビルド方法（単体）:
+#   docker build -f docker/common/Dockerfile.base -t myapp-base:local ./app
+#
+# 通常は Makefile の `make base` から呼び出される想定。
+# =========================================================
+
+ARG NODE_VERSION=22-alpine
+FROM node:${NODE_VERSION}
+
+# Next.js のビルド/実行に必要なネイティブ依存(sharp等) のための互換ライブラリ
+RUN apk add --no-cache libc6-compat
+
+# パッケージマネージャのバージョンをlockfileに合わせて固定するための corepack
+RUN corepack enable
+
+ENV NEXT_TELEMETRY_DISABLED=1
+
+WORKDIR /app

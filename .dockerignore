@@ -1,0 +1,8 @@
+.git
+.gitignore
+.mise.toml
+*.md
+docker/dev/.env
+docker/prod/.env
+node_modules
+.next
