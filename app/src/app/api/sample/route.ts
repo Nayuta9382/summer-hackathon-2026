@@ -1,6 +1,6 @@
-import { handleApiError } from 'backend/errors';
-import { searchSampleService } from 'backend/services/sampleService';
-import { searchSampleRequest } from 'backend/types/request/sample/searchSampleRequest';
+import { handleApiError } from '@/backend/errors';
+import { searchSampleService } from '@/backend/services/sampleService';
+import { searchSampleRequest } from '@/backend/types/request/sample/searchSampleRequest';
 
 export async function GET(req: Request) {
     try {

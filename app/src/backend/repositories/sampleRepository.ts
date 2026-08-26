@@ -1,6 +1,6 @@
-import { getPool } from 'backend/db/pool';
-import { Sample } from 'backend/types/db/sample';
-import { SearchSampleParams } from 'backend/types/dbparams/sample/searchSampleParams';
+import { getPool } from '@/backend/db/pool';
+import { Sample } from '@/backend/types/db/sample';
+import { SearchSampleParams } from '@/backend/types/dbparams/sample/searchSampleParams';
 import { sql } from 'slonik';
 
 export async function searchSamples(params: SearchSampleParams): Promise<Sample[]> {
