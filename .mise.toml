@@ -24,9 +24,17 @@ run = "docker compose -f docker/dev/compose.yaml --env-file docker/dev/.env buil
 description = "開発環境を停止"
 run = "docker compose -f docker/dev/compose.yaml --env-file docker/dev/.env down"
 
+[tasks."docker:dev:down:v"]
+description = "開発環境を停止し、ボリューム(node_modules/next cache含む)も削除"
+run = "docker compose -f docker/dev/compose.yaml --env-file docker/dev/.env down -v"
+
 [tasks."docker:dev:logs"]
 description = "開発環境のログを表示"
 run = "docker compose -f docker/dev/compose.yaml --env-file docker/dev/.env logs -f"
+
+[tasks."docker:dev:shell"]
+description = "webコンテナにシェルで入る"
+run = "docker compose -f docker/dev/compose.yaml --env-file docker/dev/.env exec web sh"
 
 [tasks."docker:prod"]
 description = "本番相当を起動（base未ビルドなら先にビルド）"
@@ -73,6 +81,10 @@ mise run db:wait
 [tasks."db:shell"]
 description = "psqlでDBコンテナに接続"
 run = "docker compose -f docker/dev/compose.yaml --env-file docker/dev/.env exec db psql -U app -d appdb"
+
+[tasks."db:shell:db"]
+description = "dbコンテナにシェルで入る(psqlではなくOSシェル)"
+run = "docker compose -f docker/dev/compose.yaml --env-file docker/dev/.env exec db sh"
 
 [tasks."db:apply"]
 description = "任意のSQLファイルを手動実行（例: mise run db:apply -- db/migrations/003_add_col.sql）"
