@@ -6,7 +6,7 @@ import { TagResponse } from '@/backend/types/response/tag/tagResponse';
 export async function GET(req: Request) {
     try {
         // ユーザIDを受け取る
-        const userId = '11111111-1111-1111-1111-111111111111';
+        const userId = 1;
 
         // データベースからタグの情報を検索する
         const tagResponse: TagResponse[] = await getTagsByUserId(userId);

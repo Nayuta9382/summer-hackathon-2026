@@ -3,7 +3,7 @@ import { getPool } from '../db/pool';
 import { Tag } from '../types/db/tag';
 
 // タグ情報を取得する
-export async function selectTagsByUserId(userId: string): Promise<Tag[]> {
+export async function selectTagsByUserId(userId: number): Promise<Tag[]> {
     // データベースの接続情報を取得する
     const pool = await getPool();
 
