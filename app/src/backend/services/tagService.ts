@@ -4,7 +4,7 @@ import { AddTagRequestSchema } from '../types/request/tag/addTagRequest';
 import { TagResponse } from '../types/response/tag/tagResponse';
 
 // タグの一覧をユーザIDから取得する
-export async function getTagsByUserId(userId: string): Promise<TagResponse[]> {
+export async function getTagsByUserId(userId: number): Promise<TagResponse[]> {
     // repositoryからタグの一覧を受け取る
     const tags: Tag[] = await selectTagsByUserId(userId);
 
