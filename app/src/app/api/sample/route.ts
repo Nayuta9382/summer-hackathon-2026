@@ -1,4 +1,4 @@
-import { handleApiError } from '@/backend/errors';
+import { handleApiError } from '@/backend/errors/errors';
 import { searchSampleService } from '@/backend/services/sampleService';
 import { searchSampleRequest } from '@/backend/types/request/sample/searchSampleRequest';
 
