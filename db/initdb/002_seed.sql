@@ -1,7 +1,17 @@
--- 開発用の初期データ例。不要であればこのファイルごと削除してよい。
+-- ユーザー サンプルデータ(1件)
+INSERT INTO users (user_id, user_name, password_hash, notification_sound_id, is_sound_enabled)
+VALUES (
+    '11111111-1111-1111-1111-111111111111',
+    '山田太郎',
+    '$2b$10$abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUV', -- ハッシュ化済みパスワードのダミー値
+    NULL,
+    TRUE
+);
 
-INSERT INTO users (name, email)
+-- タグ サンプルデータ(4件)
+INSERT INTO tags (tag_id, user_id, tag_name, color_code)
 VALUES
-  ('Taro Yamada', 'taro@example.com'),
-  ('Hanako Sato', 'hanako@example.com')
-ON CONFLICT (email) DO NOTHING;
+    ('22222222-2222-2222-2222-222222222221', '11111111-1111-1111-1111-111111111111', '重要', '#FF0000'),
+    ('22222222-2222-2222-2222-222222222222', '11111111-1111-1111-1111-111111111111', '後で確認', '#FFA500'),
+    ('22222222-2222-2222-2222-222222222223', '11111111-1111-1111-1111-111111111111', '完了', '#00FF00'),
+    ('22222222-2222-2222-2222-222222222224', '11111111-1111-1111-1111-111111111111', '保留', '#808080');
