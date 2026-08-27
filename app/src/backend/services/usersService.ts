@@ -1,7 +1,7 @@
 import { selectUserById } from '../repositories/userRepository';
 import { UsersParams } from '../types/dbparams/users/usersParams';
 
-export async function getUserById(userId: string) {
+export async function getUserById(userId: number) {
     const user: UsersParams = await selectUserById(userId);
 
     return {

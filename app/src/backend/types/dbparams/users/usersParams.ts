@@ -1,8 +1,8 @@
 export type UsersParams = {
-    userId: string;
+    userId: number;
     userName: string;
     isSoundEnabled: boolean;
-    notificationSoundId: string;
+    notificationSoundId: number;
     createdAt: Date;
     updatedAt: Date;
 

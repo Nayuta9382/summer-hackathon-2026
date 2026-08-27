@@ -2,7 +2,7 @@ import { sql } from 'slonik';
 import { getPool } from '../db/pool';
 import { UsersParams } from '../types/dbparams/users/usersParams';
 
-export async function selectUserById(userId: string): Promise<UsersParams> {
+export async function selectUserById(userId: number): Promise<UsersParams> {
     const pool = await getPool();
     const query = sql.unsafe`SELECT 
                    u.user_id, 

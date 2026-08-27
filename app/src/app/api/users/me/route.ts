@@ -1,10 +1,10 @@
-import { handleApiError } from '@/backend/errors';
+import { handleApiError } from '@/backend/errors/errors';
 import { getUserById } from '@/backend/services/usersService';
 import { UsersResponse } from '@/backend/types/response/users/usersResponse';
 
 export async function GET(req: Request) {
     try {
-        const userId = '11111111-1111-1111-1111-111111111111';
+        const userId = 1;
 
         const userResponse: UsersResponse = await getUserById(userId);
 
