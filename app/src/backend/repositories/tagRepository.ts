@@ -15,3 +15,18 @@ export async function selectTagsByUserId(userId: string): Promise<Tag[]> {
 
     return tags as Tag[];
 }
+
+// タグを登録する
+export async function insertTag(params: { userId: number; tagName: string; colorCode: string }): Promise<Tag> {
+    const pool = await getPool();
+
+    const query = sql.unsafe`
+        INSERT INTO tags (user_id, tag_name, color_code)
+        VALUES (${params.userId}, ${params.tagName}, ${params.colorCode ?? null})
+        RETURNING tag_id, user_id, tag_name, color_code, created_at, updated_at
+    `;
+
+    const tag = await pool.one(query);
+
+    return tag as Tag;
+}
