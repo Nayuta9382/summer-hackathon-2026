@@ -2,6 +2,7 @@ import { sql } from 'slonik';
 import { getPool } from '../db/pool';
 import { UsersParams } from '../types/dbparams/users/usersParams';
 
+// user_id をもとに 1 人のユーザー情報を取得する
 export async function selectUserById(userId: number): Promise<UsersParams> {
     const pool = await getPool();
     const query = sql.unsafe`SELECT 

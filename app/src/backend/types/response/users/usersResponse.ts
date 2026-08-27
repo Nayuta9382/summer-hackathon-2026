@@ -1,3 +1,5 @@
+// API から返すユーザー情報の型
+// クライアントへ渡すために DB の生データを整形した形
 export type UsersResponse = {
     userId: number;
     userName: string;
