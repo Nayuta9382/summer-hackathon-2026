@@ -1,7 +1,8 @@
 import { insertTag, selectTagsByUserId } from '../repositories/tagRepository';
 import { Tag } from '../types/db/tag';
-import { AddTagRequestSchema } from '../types/request/tag/addTagRequest';
+
 import { CreateTagResponse, TagListItemResponse } from '../types/response/tag/tagResponse';
+import { AddTagRequest, AddTagRequestSchema } from '../types/request/tag/addTagRequest';
 
 // タグの一覧をユーザIDから取得する
 export async function getTagsByUserId(userId: number): Promise<TagListItemResponse[]> {
@@ -15,7 +16,8 @@ export async function getTagsByUserId(userId: number): Promise<TagListItemRespon
 }
 
 // タグを登録する処理
-export async function addTag(userId: number, rawBody: unknown): Promise<CreateTagResponse> {
+export async function addTag(userId: number, rawBody: AddTagRequest): Promise<CreateTagResponse> {
+
     // バリデーション(失敗時はZodErrorが自動でthrowされ、handleApiErrorのzod部分がレスポンスする)
     const { tagName, colorCode } = AddTagRequestSchema.parse(rawBody);
 
