@@ -1,0 +1,75 @@
+/* SensorHub color palette */
+:root {
+    --background: #faf9f5;
+    --foreground: #171717;
+
+    --color-background-50: #faf9f5;
+    --color-background-100: #f5f3ec;
+    --color-background-200: #e9e5d9;
+    --color-background-300: #d9d3c4;
+    --color-background-400: #b8b09f;
+
+    --color-foreground-300: #a8a39a;
+    --color-foreground-400: #8d887e;
+    --color-foreground-500: #716d65;
+    --color-foreground-600: #57544e;
+    --color-foreground-700: #403e3a;
+    --color-foreground-800: #2d2c29;
+    --color-foreground-900: #211f1c;
+    --color-foreground-950: #171717;
+
+    --color-primary-100: #b6f3d8;
+    --color-primary-200: #88e7ba;
+    --color-primary-300: #55d99a;
+    --color-primary-400: #20c982;
+    --color-primary-500: #05ad68;
+    --color-primary-600: #04965b;
+    --color-primary-700: #047a4b;
+
+    --color-secondary-100: #fff0bf;
+    --color-secondary-300: #ffd978;
+    --color-secondary-400: #ffc94f;
+    --color-secondary-500: #f5ae18;
+    --color-secondary-600: #d88d08;
+
+    --color-accent-50: #fff1e8;
+    --color-accent-100: #ffd9c2;
+    --color-accent-300: #ff9d6b;
+    --color-accent-500: #ff672f;
+    --color-accent-600: #e84d1d;
+}
+
+@theme inline {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --color-background-50: var(--color-background-50);
+    --color-background-100: var(--color-background-100);
+    --color-background-200: var(--color-background-200);
+    --color-background-300: var(--color-background-300);
+    --color-background-400: var(--color-background-400);
+    --color-foreground-300: var(--color-foreground-300);
+    --color-foreground-400: var(--color-foreground-400);
+    --color-foreground-500: var(--color-foreground-500);
+    --color-foreground-600: var(--color-foreground-600);
+    --color-foreground-700: var(--color-foreground-700);
+    --color-foreground-800: var(--color-foreground-800);
+    --color-foreground-900: var(--color-foreground-900);
+    --color-foreground-950: var(--color-foreground-950);
+    --color-primary-100: var(--color-primary-100);
+    --color-primary-200: var(--color-primary-200);
+    --color-primary-300: var(--color-primary-300);
+    --color-primary-400: var(--color-primary-400);
+    --color-primary-500: var(--color-primary-500);
+    --color-primary-600: var(--color-primary-600);
+    --color-primary-700: var(--color-primary-700);
+    --color-secondary-100: var(--color-secondary-100);
+    --color-secondary-300: var(--color-secondary-300);
+    --color-secondary-400: var(--color-secondary-400);
+    --color-secondary-500: var(--color-secondary-500);
+    --color-secondary-600: var(--color-secondary-600);
+    --color-accent-50: var(--color-accent-50);
+    --color-accent-100: var(--color-accent-100);
+    --color-accent-300: var(--color-accent-300);
+    --color-accent-500: var(--color-accent-500);
+    --color-accent-600: var(--color-accent-600);
+}
