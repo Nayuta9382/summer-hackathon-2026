@@ -1,6 +1,6 @@
 import { handleApiError } from '@/backend/errors/errors';
 import { addTag, getTagsByUserId } from '@/backend/services/tagService';
-import { TagResponse } from '@/backend/types/response/tag/tagResponse';
+import { CreateTagResponse, TagListItemResponse } from '@/backend/types/response/tag/tagResponse';
 
 // ユーザIDからタグの一覧を取得する
 export async function GET(req: Request) {
@@ -9,7 +9,7 @@ export async function GET(req: Request) {
         const userId = 1;
 
         // データベースからタグの情報を検索する
-        const tagResponse: TagResponse[] = await getTagsByUserId(userId);
+        const tagResponse: TagListItemResponse[] = await getTagsByUserId(userId);
 
         // JSONをレスポンスする(200版)
         return Response.json(tagResponse);
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
         // リクエストbodyを取得する
         const body = await req.json();
 
-        const tagResponse = await addTag(userId, body);
+        const tagResponse: CreateTagResponse = await addTag(userId, body);
 
         return Response.json({ data: tagResponse }, { status: 201 });
     } catch (err) {
