@@ -7,6 +7,11 @@ export type SensorResponse = {
     delFlag: boolean;
     createdAt: Date;
     updatedAt: Date;
+
+    tags: {
+        tagId: number;
+        tagName: string;
+    }[];
 };
 
 // タグ作成時のレスポンスタイプ

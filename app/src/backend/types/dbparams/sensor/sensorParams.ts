@@ -10,3 +10,8 @@ export type SensorParams = {
     createdAt: Date;
     updatedAt: Date;
 };
+
+export type SensorTag = {
+    tagId: number;
+    tagName: string;
+};
