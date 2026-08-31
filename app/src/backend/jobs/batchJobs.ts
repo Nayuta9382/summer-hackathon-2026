@@ -1,4 +1,5 @@
 import { SENSOR_BATCH_TIME } from '../config/batchConfig';
+import { fetchSensorData } from '../services/fetch/sensorFetchService';
 
 // 今バッチ処理が実行中かどうかのフラグ(多重実行防止用)
 let isRunning = false;
@@ -18,6 +19,8 @@ async function doBatchJob() {
 
     try {
         // バッチの呼び出し処理
+        const res = await fetchSensorData();
+        console.log(res);
     } catch (e) {
         console.error('[batch] エラー:', e);
     } finally {
