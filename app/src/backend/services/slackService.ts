@@ -1,10 +1,15 @@
+// Slack に通知を送信するための共通処理。
+// Webhook を使用して、簡易的なメッセージ通知を行う。
+// 通知専用の機能として扱い、ビジネスロジックと切り分ける。
+
+import { slackeWebhookUrl } from '../config/slack';
+
 export async function sendslackMessage(message: string) {
-    const webhookUrl = process.env.SLACK_WEBHOOK_URL;
-    if (!webhookUrl) {
+    if (!slackeWebhookUrl) {
         throw new Error('SLACK_WEBHOOK_URLが設定されていません');
     }
 
-    const res = await fetch(webhookUrl, {
+    const res = await fetch(slackeWebhookUrl, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
