@@ -1,5 +1,6 @@
-import { insertTag, selectTagsByUserId } from '../repositories/tagRepository';
+import { insertTag, selectTagsByIds, selectTagsByUserId } from '../repositories/tagRepository';
 import { Tag } from '../types/db/tag';
+import { SensorTag } from '../types/dbparams/sensor/sensorParams';
 import { AddTagRequest, AddTagRequestSchema } from '../types/request/tag/TagRequest';
 
 import { CreateTagResponse, TagListItemResponse } from '../types/response/tag/tagResponse';
@@ -27,4 +28,9 @@ export async function addTag(userId: number, rawBody: AddTagRequest): Promise<Cr
     const { userId: _, ...tagResponse } = newTag;
 
     return tagResponse as CreateTagResponse;
+}
+
+export async function getTagByUserId(tagIds: number[], userId: number): Promise<SensorTag[]> {
+    const tags: SensorTag[] = await selectTagsByIds(tagIds, userId);
+    return tags;
 }
