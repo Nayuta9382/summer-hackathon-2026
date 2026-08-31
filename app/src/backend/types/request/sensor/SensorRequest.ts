@@ -6,7 +6,7 @@ export const SensorRequestSchema = z.object({
     sensor: z.object({
         sensorName: z.string().min(1, 'センサー名は必須です').max(100, 'センサー名は100文字以内で入力してください'),
 
-        ipAddress: z.string().ip('IPアドレスの形式が正しくありません'),
+        url: z.string(),
     }),
 
     // センサーに紐付けるタグIDの一覧
