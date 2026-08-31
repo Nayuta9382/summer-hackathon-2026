@@ -1,4 +1,5 @@
-import { selectUserById } from '../repositories/userRepository';
+import { selectUserById, selectUserByName } from '../repositories/userRepository';
+import { User } from '../types/db/user';
 import { UsersParams } from '../types/dbparams/users/usersParams';
 
 // DB のユーザー情報を API が返す形式へ変換する
@@ -18,4 +19,10 @@ export async function getUserById(userId: number) {
         soundName: user.soundName,
         fileUrl: user.fileUrl,
     };
+}
+
+// // user_name をもとに 1 人のユーザー情報を取得し、userオブジェクトでレスポンスする
+export async function getUserByName(userName: string): Promise<User | null> {
+    const user = await selectUserByName(userName);
+    return user;
 }
