@@ -3,7 +3,7 @@ import { getUserById } from '@/backend/services/usersService';
 import { UsersResponse } from '@/backend/types/response/users/usersResponse';
 
 // ログイン中ユーザーの情報を取得する API
-export async function GET(req: Request) {
+export async function GET() {
     try {
         // 今は仮のユーザー ID を使っている
         const userId = 1;
