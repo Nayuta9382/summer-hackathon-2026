@@ -4,13 +4,13 @@ import { SensorParams } from '../types/dbparams/sensor/sensorParams';
 import { Sensor } from '../types/db/sensor';
 
 // sensorsテーブルにセンサー本体を登録する
-export async function insertSensor(params: { userId: number; sensorName: string; ipAddress: string }): Promise<Sensor> {
+export async function insertSensor(params: { userId: number; sensorName: string; url: string }): Promise<Sensor> {
     const pool = await getPool();
 
     const query = sql.unsafe`
-        INSERT INTO sensors (user_id, sensor_name, ip_address)
-        VALUES (${params.userId}, ${params.sensorName}, ${params.ipAddress})
-        RETURNING sensor_id, user_id, sensor_name, ip_address,
+        INSERT INTO sensors (user_id, sensor_name, url)
+        VALUES (${params.userId}, ${params.sensorName}, ${params.url})
+        RETURNING sensor_id, user_id, sensor_name, url,
                   is_enabled, del_flag, created_at, updated_at
     `;
 

@@ -14,7 +14,7 @@ export async function addSensor(userId: number, rawBody: SensorRequest): Promise
     // const tags = await selectTagsByIds(tag.tagId, userId);
 
     // センサー本体を登録して、生成されたsensorIdを取得する
-    const newSensor = await insertSensor({ userId, sensorName: sensor.sensorName, ipAddress: sensor.ipAddress });
+    const newSensor = await insertSensor({ userId, sensorName: sensor.sensorName, url: sensor.url });
 
     // センサー登録後に、取得したsensorIdとタグIDを紐付ける
     // await insertSensorTags(newSensor.sensorId, tag.tagId);
@@ -22,7 +22,7 @@ export async function addSensor(userId: number, rawBody: SensorRequest): Promise
     const sensorResponse: SensorResponse = {
         sensorId: newSensor.sensorId,
         sensorName: newSensor.sensorName,
-        ipAddress: newSensor.ipAddress,
+        url: newSensor.url,
         isEnabled: newSensor.isEnabled,
         delFlag: newSensor.delFlag,
         createdAt: newSensor.createdAt,
