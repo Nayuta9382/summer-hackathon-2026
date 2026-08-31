@@ -1,6 +1,5 @@
 import { sql } from 'slonik';
 import { getPool } from '../db/pool';
-import { SensorParams } from '../types/dbparams/sensor/sensorParams';
 import { Sensor } from '../types/db/sensor';
 
 // sensorsテーブルにセンサー本体を登録する

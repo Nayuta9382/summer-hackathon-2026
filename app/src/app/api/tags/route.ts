@@ -3,7 +3,7 @@ import { addTag, getTagsByUserId } from '@/backend/services/tagService';
 import { CreateTagResponse, TagListItemResponse } from '@/backend/types/response/tag/tagResponse';
 
 // ユーザIDからタグの一覧を取得する
-export async function GET(req: Request) {
+export async function GET() {
     try {
         // ユーザIDを受け取る
         const userId = 1;

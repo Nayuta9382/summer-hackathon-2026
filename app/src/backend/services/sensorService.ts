@@ -1,5 +1,4 @@
 import { insertSensor } from '../repositories/sensorRepository';
-import { insertSensorTags } from '../repositories/sensorTagTepositry';
 import { SensorRequest, SensorRequestSchema } from '../types/request/sensor/SensorRequest';
 import { SensorResponse } from '../types/response/sensor/sensorResponse';
 import { getTagByUserId } from './tagService';

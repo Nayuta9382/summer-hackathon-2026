@@ -11,7 +11,11 @@ export async function getTagsByUserId(userId: number): Promise<TagListItemRespon
     const tags: Tag[] = await selectTagsByUserId(userId);
 
     // レスポンスオブジェクトに詰めなおす(for分とかで詰めなおすのの省略版的なやつ)
-    const tagResponses: TagListItemResponse[] = tags.map(({ userId, ...rest }) => rest);
+    const tagResponses: TagListItemResponse[] = tags.map((tag) => {
+        const { userId: tagUserId, ...rest } = tag;
+        void tagUserId;
+        return rest;
+    });
 
     return tagResponses;
 }
@@ -25,7 +29,8 @@ export async function addTag(userId: number, rawBody: AddTagRequest): Promise<Cr
     const newTag = await insertTag({ userId, tagName, colorCode });
 
     // newTagからuserIdを除いてTagResponse形式にする
-    const { userId: _, ...tagResponse } = newTag;
+    const { userId: newTagUserId, ...tagResponse } = newTag;
+    void newTagUserId;
 
     return tagResponse as CreateTagResponse;
 }
