@@ -6,11 +6,11 @@ INSERT INTO notification_sounds (sound_name, file_url) VALUES
 -- ユーザー サンプルデータ(1件)
 INSERT INTO users (user_name, password_hash, notification_sound_id, is_sound_enabled)
 VALUES (
-    '山田太郎',
-    '$2b$10$abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUV', -- ハッシュ化済みパスワードのダミー値
+    'sampleUser',
+    '$2a$12$sogWGp90jT4tmOcARZ.cUeXhomP4gSgWn/bZve/jS75yQ0nJCYfw2', -- ハッシュ化済みパスワードのダミー値
     1,
     TRUE
-);  
+);
 
 -- タグ サンプルデータ(4件)
 INSERT INTO tags (user_id, tag_name, color_code)
@@ -25,9 +25,9 @@ VALUES
 -- 2. ユーザー（users）のテストデータ
 -- (notification_sound_id に NULL を指定したパターンも含めています)
 INSERT INTO users (
-    user_name, 
-    password_hash, 
-    notification_sound_id, 
+    user_name,
+    password_hash,
+    notification_sound_id,
     is_sound_enabled
 ) VALUES
 -- チャイムを設定しているユーザー
