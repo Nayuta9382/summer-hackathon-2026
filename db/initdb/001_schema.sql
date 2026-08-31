@@ -8,7 +8,7 @@ CREATE TABLE notification_sounds (
 -- 2. ユーザー
 CREATE TABLE users (
     user_id SERIAL PRIMARY KEY, -- ユーザID
-    user_name VARCHAR(100) NOT NULL, -- ユーザ名
+    user_name VARCHAR(100) UNIQUE NOT NULL, -- ユーザ名
     password_hash VARCHAR(255) NOT NULL, -- パスワード
     notification_sound_id INTEGER, -- 通知音ID
     is_sound_enabled BOOLEAN NOT NULL DEFAULT TRUE, -- 通知音のON/OFF
@@ -23,7 +23,7 @@ CREATE TABLE sensors (
     sensor_id SERIAL PRIMARY KEY, -- センサーID
     user_id INTEGER NOT NULL, -- ユーザID
     sensor_name VARCHAR(100) NOT NULL, -- センサー名
-    ip_address INET, -- IPアドレス（PostgreSQL専用のINET型を利用）
+    url VARCHAR(255), -- IPアドレス（PostgreSQL専用のINET型を利用）
     is_enabled BOOLEAN NOT NULL DEFAULT TRUE, -- 有効/無効
     del_flag BOOLEAN NOT NULL DEFAULT FALSE, -- 削除フラグ（論理削除）
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 登録日時
