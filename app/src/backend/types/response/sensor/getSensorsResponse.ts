@@ -1,3 +1,5 @@
+import { SensorStatus } from '../../sensorStatus';
+
 export type GetSensorResponse = {
     sensorId: number;
     sensorName: string;
@@ -8,7 +10,7 @@ export type GetSensorResponse = {
         tagId: number;
         tagName: string;
     }[];
-    // 既読・未読それぞれの検知日時一覧
     readDetectedAts: Date[];
     unreadDetectedAts: Date[];
+    status: SensorStatus;
 };

@@ -14,6 +14,8 @@ import { getPool } from '../db/pool';
 import { deleteSensorTagsBySensorId } from '../repositories/sensorTagRepository';
 import { insertSensorTags } from '../repositories/sensorTagTepositry';
 import { ToggleSensorResponse } from '../types/response/sensor/toggleSensorResponse';
+import { SENSOR_DETECTION_ACTIVE_THRESHOLD_MS } from '../config/sensorConfig';
+import { SensorStatus } from '../types/sensorStatus';
 
 // センサーを登録する処理
 export async function addSensor(userId: number, rawBody: SensorRequest): Promise<SensorResponse> {
@@ -63,6 +65,7 @@ function groupSensorsWithTags(rows: SensorWithTagsParams[]): Map<number, GetSens
                 tags: [],
                 readDetectedAts: [],
                 unreadDetectedAts: [],
+                status: 'NONE',
             };
             sensorMap.set(row.sensorId, sensor);
         }
@@ -86,14 +89,16 @@ function applyDetectionHistories(sensorMap: Map<number, GetSensorResponse>, hist
             continue;
         }
 
+        // DBから返るdetectedAtがstringの場合があるため、Dateに変換する
+        const detectedAt = new Date(history.detectedAt);
+
         if (history.readAt != null) {
-            sensor.readDetectedAts.push(history.detectedAt);
+            sensor.readDetectedAts.push(detectedAt);
         } else {
-            sensor.unreadDetectedAts.push(history.detectedAt);
+            sensor.unreadDetectedAts.push(detectedAt);
         }
     }
 }
-
 // ユーザーに紐づくセンサー一覧を、タグ・検知履歴とともに取得する
 export async function getSensors(userId: number): Promise<GetSensorResponse[]> {
     // ① センサー×タグをJOINで取得（タグは複数あるため行が増える）
@@ -108,6 +113,11 @@ export async function getSensors(userId: number): Promise<GetSensorResponse[]> {
 
     // ④ 既読/未読に振り分けてセンサーごとに詰める
     applyDetectionHistories(sensorMap, histories);
+
+    // 検知履歴を反映した後で、各センサーのstatusを算出する
+    for (const sensor of sensorMap.values()) {
+        sensor.status = resolveSensorStatus(sensor.unreadDetectedAts);
+    }
 
     return Array.from(sensorMap.values());
 }
@@ -130,6 +140,8 @@ export async function getSensorById(sensorId: number): Promise<GetSensorResponse
 
     // ④ 既読/未読に振り分ける
     applyDetectionHistories(sensorMap, histories);
+
+    sensor.status = resolveSensorStatus(sensor.unreadDetectedAts);
 
     return sensor;
 }
@@ -168,4 +180,22 @@ export async function toggleSensor(sensorId: number): Promise<ToggleSensorRespon
         sensorId: sensor.sensorId,
         isEnabled: sensor.isEnabled,
     };
+}
+
+// 未読の検知履歴から、センサーの状態（DETECTING・UNCONFIRMED・NONE）を判定する
+function resolveSensorStatus(unreadDetectedAts: Date[]): SensorStatus {
+    if (unreadDetectedAts.length === 0) {
+        return 'NONE';
+    }
+
+    // 未読の中で最新の検知日時を取得する
+    const latestUnreadDetectedAt = unreadDetectedAts.reduce((latest, current) => (current > latest ? current : latest));
+
+    const elapsedMs = Date.now() - latestUnreadDetectedAt.getTime();
+
+    if (elapsedMs <= SENSOR_DETECTION_ACTIVE_THRESHOLD_MS) {
+        return 'DETECTING';
+    }
+
+    return 'UNCONFIRMED';
 }

@@ -1,4 +1,5 @@
-// センサー単体取得APIのレスポンス
+import { SensorStatus } from '../../sensorStatus';
+
 export type GetSensorResponse = {
     sensorId: number;
     sensorName: string;
@@ -11,4 +12,5 @@ export type GetSensorResponse = {
     }[];
     readDetectedAts: Date[];
     unreadDetectedAts: Date[];
+    status: SensorStatus;
 };
