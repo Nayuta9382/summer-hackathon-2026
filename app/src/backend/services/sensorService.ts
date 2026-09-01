@@ -1,10 +1,13 @@
 import { selectDetectionHistoriesBySensorIds } from '../repositories/SensorDetectionHistoryRepository';
-import { insertSensor, selectSensorsWithTagsByUserId, selectUsersWithSensors } from '../repositories/sensorRepository';
+import { insertSensor, selectSensorsWithTagsByUserId, selectSensorWithTagsBySensorId, selectUsersWithSensors } from '../repositories/sensorRepository';
 import { UsersWithSensorsParams } from '../types/dbparams/users/usersParams';
+import { SensorWithTagsParams } from '../types/dbparams/sensor/sensorWithTagsParams';
+import { SensorDetectionHistoryParams } from '../types/dbparams/history/sensorDetectionHistoryParams';
 import { SensorRequest, SensorRequestSchema } from '../types/request/sensor/SensorRequest';
 import { GetSensorResponse } from '../types/response/sensor/getSensorsResponse';
 import { SensorResponse } from '../types/response/sensor/sensorResponse';
 import { getTagByUserId } from './tagService';
+import createError from 'http-errors';
 
 // センサーを登録する処理
 export async function addSensor(userId: number, rawBody: SensorRequest): Promise<SensorResponse> {
@@ -13,13 +16,8 @@ export async function addSensor(userId: number, rawBody: SensorRequest): Promise
 
     const tags = await getTagByUserId(tag.tagId, userId);
 
-    // const tags = await selectTagsByIds(tag.tagId, userId);
-
     // センサー本体を登録して、生成されたsensorIdを取得する
     const newSensor = await insertSensor({ userId, sensorName: sensor.sensorName, url: sensor.url });
-
-    // センサー登録後に、取得したsensorIdとタグIDを紐付ける
-    // await insertSensorTags(newSensor.sensorId, tag.tagId);
 
     const sensorResponse: SensorResponse = {
         sensorId: newSensor.sensorId,
@@ -42,12 +40,8 @@ export async function getUsersWithSensors(): Promise<UsersWithSensorsParams[]> {
     return usersWithSensors;
 }
 
-// ユーザーに紐づくセンサー一覧を、タグ・検知履歴とともに取得する
-export async function getSensors(userId: number): Promise<GetSensorResponse[]> {
-    // ① センサー×タグをJOINで取得（タグは複数あるため行が増える）
-    const rows = await selectSensorsWithTagsByUserId(userId);
-
-    // ② sensorId単位にグルーピングし、タグを配列にまとめる
+// センサー×タグのJOIN結果（複数行）を、sensorId単位のMapにグルーピングする
+function groupSensorsWithTags(rows: SensorWithTagsParams[]): Map<number, GetSensorResponse> {
     const sensorMap = new Map<number, GetSensorResponse>();
 
     for (const row of rows) {
@@ -75,11 +69,11 @@ export async function getSensors(userId: number): Promise<GetSensorResponse[]> {
         }
     }
 
-    // ③ 検知履歴をセンサーID群でまとめて取得（別クエリ）
-    const sensorIds = Array.from(sensorMap.keys());
-    const histories = await selectDetectionHistoriesBySensorIds(sensorIds);
+    return sensorMap;
+}
 
-    // ④ 既読/未読に振り分けてセンサーごとに詰める
+// 検知履歴を既読/未読に振り分けて、sensorMap内の各センサーに詰める
+function applyDetectionHistories(sensorMap: Map<number, GetSensorResponse>, histories: SensorDetectionHistoryParams[]): void {
     for (const history of histories) {
         const sensor = sensorMap.get(history.sensorId);
         if (sensor == null) {
@@ -92,6 +86,44 @@ export async function getSensors(userId: number): Promise<GetSensorResponse[]> {
             sensor.unreadDetectedAts.push(history.detectedAt);
         }
     }
+}
+
+// ユーザーに紐づくセンサー一覧を、タグ・検知履歴とともに取得する
+export async function getSensors(userId: number): Promise<GetSensorResponse[]> {
+    // ① センサー×タグをJOINで取得（タグは複数あるため行が増える）
+    const rows = await selectSensorsWithTagsByUserId(userId);
+
+    // ② sensorId単位にグルーピングし、タグを配列にまとめる
+    const sensorMap = groupSensorsWithTags(rows);
+
+    // ③ 検知履歴をセンサーID群でまとめて取得（別クエリ）
+    const sensorIds = Array.from(sensorMap.keys());
+    const histories = await selectDetectionHistoriesBySensorIds(sensorIds);
+
+    // ④ 既読/未読に振り分けてセンサーごとに詰める
+    applyDetectionHistories(sensorMap, histories);
 
     return Array.from(sensorMap.values());
+}
+
+// センサーIDを指定して、センサー情報をタグ・検知履歴とともに取得する
+export async function getSensorById(sensorId: number): Promise<GetSensorResponse> {
+    // ① センサー×タグをJOINで取得（タグは複数あるため行が増える）
+    const rows = await selectSensorWithTagsBySensorId(sensorId);
+
+    if (rows.length === 0) {
+        throw createError(404, 'センサーが見つかりません');
+    }
+
+    // ② sensorId単位にグルーピングし、タグを配列にまとめる（単体でも共通関数を再利用）
+    const sensorMap = groupSensorsWithTags(rows);
+    const sensor = sensorMap.get(sensorId)!;
+
+    // ③ 検知履歴を取得
+    const histories = await selectDetectionHistoriesBySensorIds([sensorId]);
+
+    // ④ 既読/未読に振り分ける
+    applyDetectionHistories(sensorMap, histories);
+
+    return sensor;
 }

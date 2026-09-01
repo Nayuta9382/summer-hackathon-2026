@@ -82,3 +82,33 @@ export async function selectSensorsWithTagsByUserId(userId: number): Promise<Sen
     // DBのカラム名はinterceptorでcamelCaseに変換される
     return rows as unknown as SensorWithTagsParams[];
 }
+
+// 指定センサーIDのセンサー情報を、タグ情報とともに取得する（論理削除済みは除外）
+// 1センサーに紐づくタグが複数あるため、戻り値はタグの数だけ行が返る
+export async function selectSensorWithTagsBySensorId(sensorId: number): Promise<SensorWithTagsParams[]> {
+    const pool = await getPool();
+
+    const query = sql.unsafe`
+        SELECT
+            sensors.sensor_id,
+            sensors.sensor_name,
+            sensors.url,
+            sensors.is_enabled,
+            sensors.created_at,
+
+            tags.tag_id,
+            tags.tag_name
+        FROM sensors
+        LEFT JOIN sensor_tags
+            ON sensor_tags.sensor_id = sensors.sensor_id
+        LEFT JOIN tags
+            ON tags.tag_id = sensor_tags.tag_id
+        WHERE sensors.sensor_id = ${sensorId}
+            AND sensors.del_flag = FALSE
+    `;
+
+    const rows = await pool.any(query);
+
+    // DBのカラム名はinterceptorでcamelCaseに変換される
+    return rows as unknown as SensorWithTagsParams[];
+}
