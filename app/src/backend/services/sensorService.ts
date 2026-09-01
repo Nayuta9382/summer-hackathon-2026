@@ -1,6 +1,7 @@
-import { insertSensor, selectUsersWithSensors } from '../repositories/sensorRepository';
+import { insertSensor, selectSensorsByUserId, selectUsersWithSensors } from '../repositories/sensorRepository';
 import { UsersWithSensorsParams } from '../types/dbparams/users/usersParams';
 import { SensorRequest, SensorRequestSchema } from '../types/request/sensor/SensorRequest';
+import { GetSensorResponse } from '../types/response/sensor/getSensorsResponse';
 import { SensorResponse } from '../types/response/sensor/sensorResponse';
 import { getTagByUserId } from './tagService';
 
@@ -38,4 +39,18 @@ export async function getUsersWithSensors(): Promise<UsersWithSensorsParams[]> {
     const usersWithSensors = await selectUsersWithSensors();
 
     return usersWithSensors;
+}
+
+// ユーザーに紐づくセンサー一覧を取得する
+export async function getSensors(userId: number): Promise<GetSensorResponse[]> {
+    const sensors = await selectSensorsByUserId(userId);
+
+    // DBの型からレスポンス用の型に詰め替える
+    return sensors.map((sensor) => ({
+        sensorId: sensor.sensorId,
+        sensorName: sensor.sensorName,
+        url: sensor.url,
+        isEnabled: sensor.isEnabled,
+        createdAt: sensor.createdAt,
+    }));
 }

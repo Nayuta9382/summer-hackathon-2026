@@ -50,3 +50,29 @@ export async function selectUsersWithSensors(): Promise<UsersWithSensorsParams[]
     // DBのカラム名はinterceptorでcamelCaseに変換される
     return rows as unknown as UsersWithSensorsParams[];
 }
+
+// 指定ユーザーに紐づくセンサー一覧を取得する（論理削除済みは除外）
+export async function selectSensorsByUserId(userId: number): Promise<Sensor[]> {
+    const pool = await getPool();
+
+    const query = sql.unsafe`
+        SELECT
+            sensor_id,
+            user_id,
+            sensor_name,
+            url,
+            is_enabled,
+            del_flag,
+            created_at,
+            updated_at
+        FROM sensors
+        WHERE user_id = ${userId}
+            AND del_flag = FALSE
+        ORDER BY created_at DESC
+    `;
+
+    const rows = await pool.any(query);
+
+    // DBのカラム名はinterceptorでcamelCaseに変換される
+    return rows as unknown as Sensor[];
+}

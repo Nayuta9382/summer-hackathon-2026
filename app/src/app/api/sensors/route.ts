@@ -1,5 +1,20 @@
 import { handleApiError } from '@/backend/errors/errors';
-import { addSensor } from '@/backend/services/sensorService';
+import { addSensor, getSensors } from '@/backend/services/sensorService';
+
+// センサー一覧を取得する処理
+export async function GET(request: Request) {
+    try {
+        // ユーザIDを取得する
+        const userId = 1;
+
+        // ユーザーに紐づくセンサー一覧をサービス層で取得する
+        const sensorsResponse = await getSensors(userId);
+
+        return Response.json({ data: sensorsResponse }, { status: 200 });
+    } catch (error) {
+        return handleApiError(error);
+    }
+}
 
 // センサーを登録する処理
 export async function POST(request: Request) {
