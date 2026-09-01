@@ -134,3 +134,22 @@ export async function updateSensor(sensorId: number, sensorName: string, url: st
     // DBのカラム名はinterceptorでcamelCaseに変換される
     return sensor as unknown as Sensor | null;
 }
+
+// センサーのis_enabledを反転させる。存在しない場合はnullを返す
+export async function toggleSensorEnabled(sensorId: number): Promise<{ sensorId: number; isEnabled: boolean } | null> {
+    const pool = await getPool();
+
+    const query = sql.unsafe`
+        UPDATE sensors
+        SET
+            is_enabled = NOT is_enabled,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE sensor_id = ${sensorId}
+            AND del_flag = FALSE
+        RETURNING sensor_id, is_enabled
+    `;
+
+    const sensor = await pool.maybeOne(query);
+
+    return sensor as { sensorId: number; isEnabled: boolean } | null;
+}

@@ -1,5 +1,5 @@
 import { selectDetectionHistoriesBySensorIds } from '../repositories/SensorDetectionHistoryRepository';
-import { insertSensor, selectSensorsWithTagsByUserId, selectSensorWithTagsBySensorId, selectUsersWithSensors, updateSensor } from '../repositories/sensorRepository';
+import { insertSensor, selectSensorsWithTagsByUserId, selectSensorWithTagsBySensorId, selectUsersWithSensors, toggleSensorEnabled, updateSensor } from '../repositories/sensorRepository';
 import { UsersWithSensorsParams } from '../types/dbparams/users/usersParams';
 import { SensorWithTagsParams } from '../types/dbparams/sensor/sensorWithTagsParams';
 import { SensorDetectionHistoryParams } from '../types/dbparams/history/sensorDetectionHistoryParams';
@@ -13,6 +13,7 @@ import { UpdateSensorResponse } from '../types/response/sensor/updateSensorRespo
 import { getPool } from '../db/pool';
 import { deleteSensorTagsBySensorId } from '../repositories/sensorTagRepository';
 import { insertSensorTags } from '../repositories/sensorTagTepositry';
+import { ToggleSensorResponse } from '../types/response/sensor/toggleSensorResponse';
 
 // センサーを登録する処理
 export async function addSensor(userId: number, rawBody: SensorRequest): Promise<SensorResponse> {
@@ -153,4 +154,18 @@ export async function editSensor(sensorId: number, request: UpdateSensorRequest)
     const rows = await selectSensorWithTagsBySensorId(sensorId);
     const sensorMap = groupSensorsWithTags(rows);
     return sensorMap.get(sensorId)!;
+}
+
+// センサーの有効/無効を切り替える（トグル）
+export async function toggleSensor(sensorId: number): Promise<ToggleSensorResponse> {
+    const sensor = await toggleSensorEnabled(sensorId);
+
+    if (sensor == null) {
+        throw createError(404, 'センサーが見つかりません');
+    }
+
+    return {
+        sensorId: sensor.sensorId,
+        isEnabled: sensor.isEnabled,
+    };
 }
