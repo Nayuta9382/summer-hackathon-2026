@@ -20,4 +20,4 @@ Thumbs.db
 # mise local overrides
 .mise.local.toml
 
-004_seed_heddin.sql
+005_seed_heddin.sql
