@@ -1,5 +1,4 @@
 import { insertSensor, selectUsersWithSensors } from '../repositories/sensorRepository';
-import { insertSensorTags } from '../repositories/sensorTagTepositry';
 import { UsersWithSensorsParams } from '../types/dbparams/users/usersParams';
 import { SensorRequest, SensorRequestSchema } from '../types/request/sensor/SensorRequest';
 import { SensorResponse } from '../types/response/sensor/sensorResponse';
