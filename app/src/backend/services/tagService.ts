@@ -1,4 +1,4 @@
-import { insertTag, selectTagsByIds, selectTagsByUserId, updateTag } from '../repositories/tagRepository';
+import { deleteTag, insertTag, selectTagsByIds, selectTagsByUserId, updateTag } from '../repositories/tagRepository';
 import { Tag } from '../types/db/tag';
 import { SensorTag } from '../types/dbparams/sensor/sensorParams';
 import { AddTagRequest, AddTagRequestSchema } from '../types/request/tag/TagRequest';
@@ -6,6 +6,7 @@ import { UpdateTagRequest } from '../types/request/tag/updateTagRequest';
 import createError from 'http-errors';
 import { CreateTagResponse, TagListItemResponse } from '../types/response/tag/tagResponse';
 import { UpdateTagResponse } from '../types/response/tag/updateTagResponse';
+import { DeleteTagResponse } from '../types/response/tag/deleteTagResponse';
 
 // タグの一覧をユーザIDから取得する
 export async function getTagsByUserId(userId: number): Promise<TagListItemResponse[]> {
@@ -56,4 +57,15 @@ export async function editTag(tagId: number, request: UpdateTagRequest): Promise
         tagName: tag.tagName,
         colorCode: tag.colorCode,
     };
+}
+
+// タグを削除する
+export async function removeTag(tagId: number): Promise<DeleteTagResponse> {
+    const deleted = await deleteTag(tagId);
+
+    if (deleted == null) {
+        throw createError(404, 'タグが見つかりません');
+    }
+
+    return { tagId: deleted.tagId };
 }

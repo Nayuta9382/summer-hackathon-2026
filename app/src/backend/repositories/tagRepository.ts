@@ -66,3 +66,18 @@ export async function updateTag(tagId: number, tagName: string, colorCode: strin
 
     return tag as Tag | null;
 }
+
+// タグを削除する（物理削除）。存在しない場合はnullを返す
+export async function deleteTag(tagId: number): Promise<{ tagId: number } | null> {
+    const pool = await getPool();
+
+    const query = sql.unsafe`
+        DELETE FROM tags
+        WHERE tag_id = ${tagId}
+        RETURNING tag_id
+    `;
+
+    const deleted = await pool.maybeOne(query);
+
+    return deleted as { tagId: number } | null;
+}
