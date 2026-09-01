@@ -8,4 +8,7 @@ export type GetSensorResponse = {
         tagId: number;
         tagName: string;
     }[];
+    // 既読・未読それぞれの検知日時一覧
+    readDetectedAts: Date[];
+    unreadDetectedAts: Date[];
 };

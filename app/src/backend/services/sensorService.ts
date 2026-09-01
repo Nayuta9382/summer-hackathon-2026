@@ -1,3 +1,4 @@
+import { selectDetectionHistoriesBySensorIds } from '../repositories/SensorDetectionHistoryRepository';
 import { insertSensor, selectSensorsWithTagsByUserId, selectUsersWithSensors } from '../repositories/sensorRepository';
 import { UsersWithSensorsParams } from '../types/dbparams/users/usersParams';
 import { SensorRequest, SensorRequestSchema } from '../types/request/sensor/SensorRequest';
@@ -41,11 +42,12 @@ export async function getUsersWithSensors(): Promise<UsersWithSensorsParams[]> {
     return usersWithSensors;
 }
 
-// ユーザーに紐づくセンサー一覧を、タグ情報とともに取得する
+// ユーザーに紐づくセンサー一覧を、タグ・検知履歴とともに取得する
 export async function getSensors(userId: number): Promise<GetSensorResponse[]> {
+    // ① センサー×タグをJOINで取得（タグは複数あるため行が増える）
     const rows = await selectSensorsWithTagsByUserId(userId);
 
-    // sensorId単位にグルーピングし、タグを配列にまとめる
+    // ② sensorId単位にグルーピングし、タグを配列にまとめる
     const sensorMap = new Map<number, GetSensorResponse>();
 
     for (const row of rows) {
@@ -59,6 +61,8 @@ export async function getSensors(userId: number): Promise<GetSensorResponse[]> {
                 isEnabled: row.isEnabled,
                 createdAt: row.createdAt,
                 tags: [],
+                readDetectedAts: [],
+                unreadDetectedAts: [],
             };
             sensorMap.set(row.sensorId, sensor);
         }
@@ -68,6 +72,24 @@ export async function getSensors(userId: number): Promise<GetSensorResponse[]> {
                 tagId: row.tagId,
                 tagName: row.tagName,
             });
+        }
+    }
+
+    // ③ 検知履歴をセンサーID群でまとめて取得（別クエリ）
+    const sensorIds = Array.from(sensorMap.keys());
+    const histories = await selectDetectionHistoriesBySensorIds(sensorIds);
+
+    // ④ 既読/未読に振り分けてセンサーごとに詰める
+    for (const history of histories) {
+        const sensor = sensorMap.get(history.sensorId);
+        if (sensor == null) {
+            continue;
+        }
+
+        if (history.readAt != null) {
+            sensor.readDetectedAts.push(history.detectedAt);
+        } else {
+            sensor.unreadDetectedAts.push(history.detectedAt);
         }
     }
 
