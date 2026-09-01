@@ -1,9 +1,11 @@
-import { insertTag, selectTagsByIds, selectTagsByUserId } from '../repositories/tagRepository';
+import { insertTag, selectTagsByIds, selectTagsByUserId, updateTag } from '../repositories/tagRepository';
 import { Tag } from '../types/db/tag';
 import { SensorTag } from '../types/dbparams/sensor/sensorParams';
 import { AddTagRequest, AddTagRequestSchema } from '../types/request/tag/TagRequest';
-
+import { UpdateTagRequest } from '../types/request/tag/updateTagRequest';
+import createError from 'http-errors';
 import { CreateTagResponse, TagListItemResponse } from '../types/response/tag/tagResponse';
+import { UpdateTagResponse } from '../types/response/tag/updateTagResponse';
 
 // タグの一覧をユーザIDから取得する
 export async function getTagsByUserId(userId: number): Promise<TagListItemResponse[]> {
@@ -38,4 +40,20 @@ export async function addTag(userId: number, rawBody: AddTagRequest): Promise<Cr
 export async function getTagByUserId(tagIds: number[], userId: number): Promise<SensorTag[]> {
     const tags: SensorTag[] = await selectTagsByIds(tagIds, userId);
     return tags;
+}
+
+// タグ情報（タグ名・カラーコード）を更新する
+export async function editTag(tagId: number, request: UpdateTagRequest): Promise<UpdateTagResponse> {
+    const tag = await updateTag(tagId, request.tagName, request.colorCode);
+
+    if (tag == null) {
+        throw createError(404, 'タグが見つかりません');
+    }
+
+    // DBの型からレスポンス用の型に詰め替える
+    return {
+        tagId: tag.tagId,
+        tagName: tag.tagName,
+        colorCode: tag.colorCode,
+    };
 }
