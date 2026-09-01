@@ -1,5 +1,5 @@
 import { selectDetectionHistoriesBySensorIds } from '../repositories/SensorDetectionHistoryRepository';
-import { insertSensor, selectSensorsWithTagsByUserId, selectSensorWithTagsBySensorId, selectUsersWithSensors } from '../repositories/sensorRepository';
+import { insertSensor, selectSensorsWithTagsByUserId, selectSensorWithTagsBySensorId, selectUsersWithSensors, updateSensor } from '../repositories/sensorRepository';
 import { UsersWithSensorsParams } from '../types/dbparams/users/usersParams';
 import { SensorWithTagsParams } from '../types/dbparams/sensor/sensorWithTagsParams';
 import { SensorDetectionHistoryParams } from '../types/dbparams/history/sensorDetectionHistoryParams';
@@ -8,6 +8,11 @@ import { GetSensorResponse } from '../types/response/sensor/getSensorsResponse';
 import { SensorResponse } from '../types/response/sensor/sensorResponse';
 import { getTagByUserId } from './tagService';
 import createError from 'http-errors';
+import { UpdateSensorRequest } from '../types/request/sensor/updateSensorRequest';
+import { UpdateSensorResponse } from '../types/response/sensor/updateSensorResponse';
+import { getPool } from '../db/pool';
+import { deleteSensorTagsBySensorId } from '../repositories/sensorTagRepository';
+import { insertSensorTags } from '../repositories/sensorTagTepositry';
 
 // センサーを登録する処理
 export async function addSensor(userId: number, rawBody: SensorRequest): Promise<SensorResponse> {
@@ -126,4 +131,26 @@ export async function getSensorById(sensorId: number): Promise<GetSensorResponse
     applyDetectionHistories(sensorMap, histories);
 
     return sensor;
+}
+
+// センサー情報（名前・URL・タグ紐付け）を更新する
+export async function editSensor(sensorId: number, request: UpdateSensorRequest): Promise<UpdateSensorResponse> {
+    // ① センサー本体（名前・URL）を更新
+    const updated = await updateSensor(sensorId, request.sensorName, request.url);
+
+    // ② 存在しない場合は404
+    if (updated == null) {
+        throw createError(404, 'センサーが見つかりません');
+    }
+
+    // ③ 既存のタグ紐付けを全削除
+    await deleteSensorTagsBySensorId(sensorId);
+
+    // ④ 渡されたタグID配列で再登録（完全置き換え）
+    await insertSensorTags(sensorId, request.tagIds);
+
+    // ⑤ 更新後の最新情報をタグ込みで取得して返す
+    const rows = await selectSensorWithTagsBySensorId(sensorId);
+    const sensorMap = groupSensorsWithTags(rows);
+    return sensorMap.get(sensorId)!;
 }

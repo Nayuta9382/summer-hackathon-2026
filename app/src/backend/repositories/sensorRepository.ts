@@ -112,3 +112,25 @@ export async function selectSensorWithTagsBySensorId(sensorId: number): Promise<
     // DBのカラム名はinterceptorでcamelCaseに変換される
     return rows as unknown as SensorWithTagsParams[];
 }
+// センサー本体（sensor_name, url）を更新する。存在しない場合はnullを返す
+export async function updateSensor(sensorId: number, sensorName: string, url: string): Promise<Sensor | null> {
+    const pool = await getPool();
+
+    const query = sql.unsafe`
+        UPDATE sensors
+        SET
+            sensor_name = ${sensorName},
+            url = ${url},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE sensor_id = ${sensorId}
+            AND del_flag = FALSE
+        RETURNING
+            sensor_id, user_id, sensor_name, url,
+            is_enabled, del_flag, created_at, updated_at
+    `;
+
+    const sensor = await pool.maybeOne(query);
+
+    // DBのカラム名はinterceptorでcamelCaseに変換される
+    return sensor as unknown as Sensor | null;
+}
