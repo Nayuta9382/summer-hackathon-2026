@@ -47,3 +47,22 @@ export async function selectTagsByIds(tagIds: number[], userId: number): Promise
 
     return tags as SensorTag[];
 }
+
+// タグ情報（tag_name, color_code）を更新する。存在しない場合はnullを返す
+export async function updateTag(tagId: number, tagName: string, colorCode: string): Promise<Tag | null> {
+    const pool = await getPool();
+
+    const query = sql.unsafe`
+        UPDATE tags
+        SET
+            tag_name = ${tagName},
+            color_code = ${colorCode},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE tag_id = ${tagId}
+        RETURNING tag_id, user_id, tag_name, color_code, created_at, updated_at
+    `;
+
+    const tag = await pool.maybeOne(query);
+
+    return tag as Tag | null;
+}
