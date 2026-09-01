@@ -1,4 +1,4 @@
-import { insertSensor, selectSensorsByUserId, selectUsersWithSensors } from '../repositories/sensorRepository';
+import { insertSensor, selectSensorsWithTagsByUserId, selectUsersWithSensors } from '../repositories/sensorRepository';
 import { UsersWithSensorsParams } from '../types/dbparams/users/usersParams';
 import { SensorRequest, SensorRequestSchema } from '../types/request/sensor/SensorRequest';
 import { GetSensorResponse } from '../types/response/sensor/getSensorsResponse';
@@ -41,16 +41,35 @@ export async function getUsersWithSensors(): Promise<UsersWithSensorsParams[]> {
     return usersWithSensors;
 }
 
-// ユーザーに紐づくセンサー一覧を取得する
+// ユーザーに紐づくセンサー一覧を、タグ情報とともに取得する
 export async function getSensors(userId: number): Promise<GetSensorResponse[]> {
-    const sensors = await selectSensorsByUserId(userId);
+    const rows = await selectSensorsWithTagsByUserId(userId);
 
-    // DBの型からレスポンス用の型に詰め替える
-    return sensors.map((sensor) => ({
-        sensorId: sensor.sensorId,
-        sensorName: sensor.sensorName,
-        url: sensor.url,
-        isEnabled: sensor.isEnabled,
-        createdAt: sensor.createdAt,
-    }));
+    // sensorId単位にグルーピングし、タグを配列にまとめる
+    const sensorMap = new Map<number, GetSensorResponse>();
+
+    for (const row of rows) {
+        let sensor = sensorMap.get(row.sensorId);
+
+        if (sensor == null) {
+            sensor = {
+                sensorId: row.sensorId,
+                sensorName: row.sensorName,
+                url: row.url,
+                isEnabled: row.isEnabled,
+                createdAt: row.createdAt,
+                tags: [],
+            };
+            sensorMap.set(row.sensorId, sensor);
+        }
+
+        if (row.tagId != null && row.tagName != null) {
+            sensor.tags.push({
+                tagId: row.tagId,
+                tagName: row.tagName,
+            });
+        }
+    }
+
+    return Array.from(sensorMap.values());
 }
