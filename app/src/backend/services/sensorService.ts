@@ -1,4 +1,5 @@
-import { insertSensor } from '../repositories/sensorRepository';
+import { insertSensor, selectUsersWithSensors } from '../repositories/sensorRepository';
+import { UsersWithSensorsParams } from '../types/dbparams/users/usersParams';
 import { SensorRequest, SensorRequestSchema } from '../types/request/sensor/SensorRequest';
 import { SensorResponse } from '../types/response/sensor/sensorResponse';
 import { getTagByUserId } from './tagService';
@@ -30,4 +31,11 @@ export async function addSensor(userId: number, rawBody: SensorRequest): Promise
     };
 
     return sensorResponse;
+}
+
+// ユーザー情報とそれに紐づくセンサー情報を取得する
+export async function getUsersWithSensors(): Promise<UsersWithSensorsParams[]> {
+    const usersWithSensors = await selectUsersWithSensors();
+
+    return usersWithSensors;
 }

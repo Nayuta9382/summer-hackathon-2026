@@ -1,7 +1,7 @@
 import { sql } from 'slonik';
 import { getPool } from '../db/pool';
 import { Sensor } from '../types/db/sensor';
-
+import { UsersWithSensorsParams } from '../types/dbparams/users/usersParams';
 // sensorsテーブルにセンサー本体を登録する
 export async function insertSensor(params: { userId: number; sensorName: string; url: string }): Promise<Sensor> {
     const pool = await getPool();
@@ -19,16 +19,34 @@ export async function insertSensor(params: { userId: number; sensorName: string;
     return sensor as Sensor;
 }
 
-// // sensor_tagsテーブルにセンサーとタグの紐付けを登録する
-// export async function insertSensorTags(sensorId: number, tagIds: number[]): Promise<void> {
-//     const pool = await getPool();
+// ユーザ情報を紐づけたセンサ情報の一覧を取得する
+export async function selectUsersWithSensors(): Promise<UsersWithSensorsParams[]> {
+    const pool = await getPool();
 
-//     for (const tagId of tagIds) {
-//         const query = sql.unsafe`
-//             INSERT INTO sensor_tags (sensor_id, tag_id)
-//             VALUES (${sensorId}, ${tagId})
-//         `;
+    const query = sql.unsafe`
+        SELECT
+            users.user_id,
+            users.user_name,
+            users.is_sound_enabled,
+            users.notification_sound_id,
+            users.created_at,
+            users.updated_at,
 
-//         await pool.query(query);
-//     }
-// }
+            sensors.sensor_id,
+            sensors.sensor_name,
+            sensors.url,
+            sensors.is_enabled,
+            sensors.del_flag,
+            sensors.created_at AS sensor_created_at,
+            sensors.updated_at AS sensor_updated_at
+        FROM users
+        LEFT JOIN sensors
+            ON sensors.user_id = users.user_id
+            AND sensors.del_flag = FALSE
+    `;
+
+    const rows = await pool.any(query);
+
+    // DBのカラム名はinterceptorでcamelCaseに変換される
+    return rows as unknown as UsersWithSensorsParams[];
+}
