@@ -1,5 +1,4 @@
--- 公開用ダミーデータ
--- user_id は 3〜7 を明示指定（1,2は seed_local.sql 用に予約）
+
 
 -- 1. 通知音マスタ
 INSERT INTO notification_sounds (sound_name, file_url) VALUES
