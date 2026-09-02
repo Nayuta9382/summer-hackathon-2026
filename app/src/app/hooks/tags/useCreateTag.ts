@@ -21,6 +21,7 @@ export function useCreateTag(): UseCreateTagResult {
             const res = await fetch('/api/tags', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify(request),
             });
 

@@ -22,6 +22,7 @@ export function useUpdateSensor(): UseUpdateSensorResult {
             const res = await fetch(`/api/sensors/${sensorId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify(request),
             });
 

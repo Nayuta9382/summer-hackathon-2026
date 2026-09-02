@@ -19,7 +19,9 @@ export function useTags(): UseTagsResult {
         setError(null);
 
         try {
-            const res = await fetch('/api/tags/me');
+            const res = await fetch('/api/tags/me', {
+                credentials: 'include',
+            });
 
             if (!res.ok) {
                 throw new Error('タグ一覧の取得に失敗しました');

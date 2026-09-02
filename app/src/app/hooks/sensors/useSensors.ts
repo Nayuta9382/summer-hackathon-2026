@@ -20,8 +20,9 @@ export function useSensors(): UseSensorsResult {
         setError(null);
 
         try {
-            const res = await fetch('/api/sensors');
-
+            const res = await fetch('/api/sensors', {
+                credentials: 'include',
+            });
             if (!res.ok) {
                 throw new Error('センサー一覧の取得に失敗しました');
             }

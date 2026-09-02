@@ -23,6 +23,7 @@ export function useCreateSensor(): UseCreateSensorResult {
             const res = await fetch('/api/sensors', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify(request),
             });
 

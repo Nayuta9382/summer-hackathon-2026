@@ -22,6 +22,7 @@ export function useUpdateTag(): UseUpdateTagResult {
             const res = await fetch(`/api/tags/${tagId}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify(request),
             });
 

@@ -20,7 +20,9 @@ export function useUser(): UseMeResult {
         setError(null);
 
         try {
-            const res = await fetch('/api/users/me');
+            const res = await fetch('/api/users/me', {
+                credentials: 'include',
+            });
 
             if (!res.ok) {
                 throw new Error('ユーザー情報の取得に失敗しました');
