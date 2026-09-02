@@ -6,7 +6,7 @@ interface SidebarProps {
 }
 
 const navItems = [
-    { key: 'dashboard', label: 'センサー管理', icon: 'ri-dashboard-3-line', to: '/sensors' },
+    { key: 'dashboard', label: 'ダッシュボード', icon: 'ri-dashboard-3-line', to: '/' },
     { key: 'notifications', label: '通知', icon: 'ri-notification-3-line', to: '/notifications' },
     { key: 'settings', label: '設定', icon: 'ri-settings-3-line', to: '/settings' },
     { key: 'tutorial', label: 'チュートリアル', icon: 'ri-graduation-cap-line', to: '/tutorial' },
