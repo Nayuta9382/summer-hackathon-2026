@@ -1,48 +1,46 @@
-// hooks/useMe.ts
-import { UsersResponse } from '@/backend/types/response/users/usersResponse';
-import { useState, useEffect, useCallback } from 'react';
+// hooks/useUpdateTag.ts
+import { useState, useCallback } from 'react';
+import { TagResponse } from '@/backend/types/response/tag/tagResponse';
+import { UpdateTagRequest } from '@/backend/types/request/tag/updateTagRequest';
 
-type UseMeResult = {
-    user: UsersResponse | null;
-    isLoading: boolean;
+type UseUpdateTagResult = {
+    updateTag: (tagId: number, request: UpdateTagRequest) => Promise<{ tag: TagResponse | null; status: number }>;
+    isUpdating: boolean;
     error: string | null;
-    refetch: () => void;
 };
 
-// 自分自身のユーザー情報を取得するフック
-export function useUser(): UseMeResult {
-    const [user, setUser] = useState<UsersResponse | null>(null);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
+// タグを更新するフック
+export function useUpdateTag(): UseUpdateTagResult {
+    const [isUpdating, setIsUpdating] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchMe = useCallback(async () => {
-        setIsLoading(true);
+    const updateTag = useCallback(async (tagId: number, request: UpdateTagRequest): Promise<{ tag: TagResponse | null; status: number }> => {
+        setIsUpdating(true);
         setError(null);
 
         try {
-            const res = await fetch('/api/users/me', {
+            const res = await fetch(`/api/tags/${tagId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
+                body: JSON.stringify(request),
             });
-
-            if (!res.ok) {
-                throw new Error('ユーザー情報の取得に失敗しました');
-            }
 
             const json = await res.json();
 
-            setUser(json as UsersResponse);
+            if (!res.ok) {
+                setError('タグの更新に失敗しました');
+                return { tag: null, status: res.status };
+            }
+
+            return { tag: json.data as TagResponse, status: res.status };
         } catch (err) {
-            setError(err instanceof Error ? err.message : 'ユーザー情報の取得に失敗しました');
+            setError(err instanceof Error ? err.message : 'タグの更新に失敗しました');
+            return { tag: null, status: 500 };
         } finally {
-            setIsLoading(false);
+            setIsUpdating(false);
         }
     }, []);
 
-    useEffect(() => {
-        queueMicrotask(() => {
-            fetchMe();
-        });
-    }, [fetchMe]);
-
-    return { user, isLoading, error, refetch: fetchMe };
+    return { updateTag, isUpdating, error };
 }

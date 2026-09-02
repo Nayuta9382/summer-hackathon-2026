@@ -1,3 +1,4 @@
+// app/tags/create/page.tsx
 'use client';
 
 import { useCreateTag } from '@/app/hooks/tags/useCreateTag';
@@ -14,10 +15,10 @@ export default function CreateTagPage() {
         e.preventDefault();
         setSuccessMessage(null);
 
-        const result = await createTag({ tagName, colorCode });
+        const { tag } = await createTag({ tagName, colorCode });
 
-        if (result) {
-            setSuccessMessage(`タグ「${result.tagName}」を作成しました`);
+        if (tag) {
+            setSuccessMessage(`タグ「${tag.tagName}」を作成しました`);
             setTagName('');
             setColorCode('#000000');
         }

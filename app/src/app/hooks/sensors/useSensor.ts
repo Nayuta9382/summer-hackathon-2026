@@ -4,6 +4,7 @@ import { GetSensorResponse } from '@/backend/types/response/sensor/getSensorResp
 
 type UseSensorResult = {
     sensor: GetSensorResponse | null;
+    status: number | null;
     isLoading: boolean;
     error: string | null;
     refetch: () => void;
@@ -12,6 +13,7 @@ type UseSensorResult = {
 // センサーIDを指定して単一のセンサー情報を取得するフック
 export function useSensor(sensorId: number): UseSensorResult {
     const [sensor, setSensor] = useState<GetSensorResponse | null>(null);
+    const [status, setStatus] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -24,11 +26,15 @@ export function useSensor(sensorId: number): UseSensorResult {
                 credentials: 'include',
             });
 
+            const json = await res.json();
+            setStatus(res.status);
+
             if (!res.ok) {
-                throw new Error('センサー情報の取得に失敗しました');
+                setError('センサー情報の取得に失敗しました');
+                setSensor(null);
+                return;
             }
 
-            const json = await res.json();
             setSensor(json.data as GetSensorResponse);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'センサー情報の取得に失敗しました');
@@ -43,5 +49,5 @@ export function useSensor(sensorId: number): UseSensorResult {
         });
     }, [fetchSensor]);
 
-    return { sensor, isLoading, error, refetch: fetchSensor };
+    return { sensor, status, isLoading, error, refetch: fetchSensor };
 }

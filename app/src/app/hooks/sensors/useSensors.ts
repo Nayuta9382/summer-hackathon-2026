@@ -4,6 +4,7 @@ import { GetSensorResponse } from '@/backend/types/response/sensor/getSensorResp
 
 type UseSensorsResult = {
     sensors: GetSensorResponse[];
+    status: number | null;
     isLoading: boolean;
     error: string | null;
     refetch: () => void;
@@ -12,6 +13,7 @@ type UseSensorsResult = {
 // センサー一覧を取得するフック
 export function useSensors(): UseSensorsResult {
     const [sensors, setSensors] = useState<GetSensorResponse[]>([]);
+    const [status, setStatus] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -23,11 +25,16 @@ export function useSensors(): UseSensorsResult {
             const res = await fetch('/api/sensors', {
                 credentials: 'include',
             });
-            if (!res.ok) {
-                throw new Error('センサー一覧の取得に失敗しました');
-            }
 
             const json = await res.json();
+            setStatus(res.status);
+
+            if (!res.ok) {
+                setError('センサー一覧の取得に失敗しました');
+                setSensors([]);
+                return;
+            }
+
             setSensors(json.data as GetSensorResponse[]);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'センサー一覧の取得に失敗しました');
@@ -42,5 +49,5 @@ export function useSensors(): UseSensorsResult {
         });
     }, [fetchSensors]);
 
-    return { sensors, isLoading, error, refetch: fetchSensors };
+    return { sensors, status, isLoading, error, refetch: fetchSensors };
 }
