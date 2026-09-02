@@ -4,6 +4,8 @@ import { checkSensor } from './fetch/sensorFetchService';
 import { registerSensorDetectionHistory } from './SensorDetectionHistoryService';
 import { getUsersWithSensors } from './sensorService';
 import { getUsersWithNotificationProviders } from './notificationProviderService'; // ①import追加
+import { getActiveSlackProviderId } from './slackProviderService';
+import { sendSlackDmToUser } from './slackService';
 
 // 登録されているセンサ情報の一覧を取得し、センサが反応してるかを取得し、反応時DB登録＆メッセージ送信を行う
 export async function runSensorBatch() {
@@ -28,7 +30,16 @@ export async function runSensorBatch() {
             const detectedAt = new Date();
             await registerSensorDetectionHistory(row.sensorId as number, detectedAt); // ④usersWithProviders.sensorId → row.sensorId
 
-            // 通知プロバイダーに通知を送信する
+            // 有効なSlackプロバイダーIDを取得する
+            const slackProviderId = await getActiveSlackProviderId(row.userId);
+
+            // 有効なSlack連携が無ければ通知は送信しない
+            if (slackProviderId == null) {
+                return;
+            }
+
+            // Slackに検知通知のDMを送信する
+            await sendSlackDmToUser(slackProviderId, `センサー「${row.sensorName}」が反応しました`);
         }),
     );
 }

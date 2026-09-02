@@ -80,3 +80,22 @@ export async function deactivateSlackProvidersByUserId(userId: number): Promise<
 
     await pool.query(query);
 }
+
+// ユーザーIDに紐づく有効なSlackプロバイダーのprovider_id(SlackユーザーID)を取得する（存在しなければnull）
+export async function selectActiveSlackProviderIdByUserId(userId: number): Promise<string | null> {
+    const pool = await getPool();
+
+    const query = sql.unsafe`
+        SELECT sp.provider_id AS "providerId"
+        FROM notification_provider_masters npm
+        INNER JOIN slack_providers sp ON sp.id = npm.id
+        WHERE npm.user_id = ${userId}
+          AND npm.provider_type = ${PROVIDER_TYPE}
+          AND npm.active_flg = TRUE
+        LIMIT 1
+    `;
+
+    const result = await pool.maybeOne(query);
+
+    return result ? (result.providerId as string) : null;
+}
