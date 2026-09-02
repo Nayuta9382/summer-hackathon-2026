@@ -92,7 +92,7 @@ CREATE TABLE line_providers (
 CREATE TABLE slack_providers (
     id INTEGER PRIMARY KEY REFERENCES notification_provider_masters(id) ON DELETE CASCADE, -- ID（notification_provider_masters.id を参照）
     provider_type VARCHAR(50) NOT NULL, -- サービス種別
-    provider_id VARCHAR(255) NOT NULL, -- スラックのメールアドレス/識別子
+    provider_id VARCHAR(255) NOT NULL, -- スラックのuser ID (例: U0BTME19RB7)
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 登録日時
     updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP -- 更新日時
 );
