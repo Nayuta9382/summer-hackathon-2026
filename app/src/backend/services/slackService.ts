@@ -4,14 +4,7 @@
 // 3) 既存の Webhook 設定: フォールバックとして利用
 
 import { slackBotToken, slackChannelId, slackeWebhookUrl } from '../config/slack';
-
-type SlackApiResponse = {
-    ok?: boolean;
-    error?: string;
-    channel?: {
-        id?: string;
-    };
-};
+import { createSlackProvider, upsertSlackProvider } from './slackProviderService';
 
 // Slack user ID (例: U1234567890) を受け取り、そのユーザーへの DM を送る。
 // まず conversations.open で DM チャネルを開いてから、chat.postMessage でメッセージを送る。
@@ -106,4 +99,64 @@ export async function sendslackMessage(message: string) {
     }
 
     return { ok: true };
+}
+
+// 今回はべた書きで別ファイルに記述は省略
+type SlackApiResponse = {
+    ok?: boolean;
+    error?: string;
+    channel?: {
+        id?: string;
+    };
+};
+
+type SlackOAuthResult = { status: 'connected' } | { status: 'error' } | { status: 'wrong_workspace' } | { status: 'unauthorized' };
+
+// Slack OAuthのcallback処理をまとめたビジネスロジック
+// 1) codeをアクセストークン + id_tokenに交換
+// 2) id_tokenからSlackユーザーIDを取り出す
+// 3) 固定ワークスペース以外を弾く
+// 4) アプリユーザーとSlackユーザーIDをDBに紐付け
+// 5) 連携完了のDMを送信
+export async function handleSlackOAuthCallback(code: string, appUserId: number | null): Promise<SlackOAuthResult> {
+    // codeをアクセストークン + id_tokenに交換(Sign in with Slack)
+    const tokenRes = await fetch('https://slack.com/api/openid.connect.token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+            client_id: process.env.SLACK_CLIENT_ID!,
+            client_secret: process.env.SLACK_CLIENT_SECRET!,
+            code,
+            redirect_uri: process.env.SLACK_REDIRECT_URI!,
+            grant_type: 'authorization_code',
+        }),
+    });
+    const tokenData = await tokenRes.json();
+
+    if (!tokenData.ok) {
+        return { status: 'error' };
+    }
+
+    // id_token(JWT)をデコードしてSlackのユーザーID(sub)を取り出す
+    const idToken = tokenData.id_token as string;
+    const payload = JSON.parse(Buffer.from(idToken.split('.')[1], 'base64').toString('utf8'));
+    const slackUserId = payload.sub as string; // 例: "U0123ABCD"
+    const slackTeamId = payload['https://slack.com/team_id'] as string | undefined;
+
+    // 固定ワークスペース以外からの認証は弾く(安全策)
+    if (slackTeamId && slackTeamId !== process.env.SLACK_TEAM_ID) {
+        return { status: 'wrong_workspace' };
+    }
+
+    // 現在ログイン中のアプリユーザーを特定できなければ未認可
+    if (!appUserId) {
+        return { status: 'unauthorized' };
+    }
+
+    // DBにSlackユーザーIDを登録(既存があれば無効化して再有効化、無ければ新規登録)
+    await upsertSlackProvider(appUserId, slackUserId);
+    // 接続完了通知のDMを送信
+    await sendSlackDmToUser(slackUserId, 'Slack連携が完了しました');
+
+    return { status: 'connected' };
 }
