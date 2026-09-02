@@ -20,6 +20,7 @@ export function useDeleteTag(): UseDeleteTagResult {
         try {
             const res = await fetch(`/api/tags/${tagId}`, {
                 method: 'DELETE',
+             credentials: 'include',
             });
 
             if (!res.ok) {
