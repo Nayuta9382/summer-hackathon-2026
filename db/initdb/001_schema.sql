@@ -81,7 +81,7 @@ CREATE TABLE notification_provider_masters (
 
 -- 8. LINEプロバイダー
 CREATE TABLE line_providers (
-    id SERIAL PRIMARY KEY, -- ID
+    id INTEGER PRIMARY KEY REFERENCES notification_provider_masters(id) ON DELETE CASCADE, -- ID（notification_provider_masters.id を参照）
     provider_type VARCHAR(50) NOT NULL, -- サービス種別
     provider_id VARCHAR(100) NOT NULL, -- LINEのユーザID
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 登録日時
@@ -90,7 +90,7 @@ CREATE TABLE line_providers (
 
 -- 9. スラックプロバイダー
 CREATE TABLE slack_providers (
-    id SERIAL PRIMARY KEY, -- ID
+    id INTEGER PRIMARY KEY REFERENCES notification_provider_masters(id) ON DELETE CASCADE, -- ID（notification_provider_masters.id を参照）
     provider_type VARCHAR(50) NOT NULL, -- サービス種別
     provider_id VARCHAR(255) NOT NULL, -- スラックのメールアドレス/識別子
     created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 登録日時

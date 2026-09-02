@@ -1,6 +1,6 @@
 import { sql } from 'slonik';
 import { getPool } from '../db/pool';
-import { UsersParams } from '../types/dbparams/users/usersParams';
+import { UsersParams, UsersWithNotificationProvidersParams, UsersWithSensorsParams } from '../types/dbparams/users/usersParams';
 import { User } from '../types/db/user';
 
 // user_id をもとに 1 人のユーザー情報を取得する
