@@ -4,7 +4,7 @@ import { TagResponse } from '@/backend/types/response/tag/tagResponse';
 import { UpdateTagRequest } from '@/backend/types/request/tag/updateTagRequest';
 
 type UseUpdateTagResult = {
-    updateTag: (tagId: number, request: UpdateTagRequest) => Promise<TagResponse | null>;
+    updateTag: (tagId: number, request: UpdateTagRequest) => Promise<{ tag: TagResponse | null; status: number }>;
     isUpdating: boolean;
     error: string | null;
 };
@@ -14,7 +14,7 @@ export function useUpdateTag(): UseUpdateTagResult {
     const [isUpdating, setIsUpdating] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const updateTag = useCallback(async (tagId: number, request: UpdateTagRequest): Promise<TagResponse | null> => {
+    const updateTag = useCallback(async (tagId: number, request: UpdateTagRequest): Promise<{ tag: TagResponse | null; status: number }> => {
         setIsUpdating(true);
         setError(null);
 
@@ -26,15 +26,17 @@ export function useUpdateTag(): UseUpdateTagResult {
                 body: JSON.stringify(request),
             });
 
+            const json = await res.json();
+
             if (!res.ok) {
-                throw new Error('タグの更新に失敗しました');
+                setError('タグの更新に失敗しました');
+                return { tag: null, status: res.status };
             }
 
-            const json = await res.json();
-            return json.data as TagResponse;
+            return { tag: json.data as TagResponse, status: res.status };
         } catch (err) {
             setError(err instanceof Error ? err.message : 'タグの更新に失敗しました');
-            return null;
+            return { tag: null, status: 500 };
         } finally {
             setIsUpdating(false);
         }

@@ -1,8 +1,10 @@
+// hooks/useTags.ts
 import { useState, useEffect, useCallback } from 'react';
 import { TagResponse } from '@/backend/types/response/tag/tagResponse';
 
 type UseTagsResult = {
     tags: TagResponse[];
+    status: number | null;
     isLoading: boolean;
     error: string | null;
     refetch: () => void;
@@ -11,6 +13,7 @@ type UseTagsResult = {
 // タグ一覧を取得するフック
 export function useTags(): UseTagsResult {
     const [tags, setTags] = useState<TagResponse[]>([]);
+    const [status, setStatus] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -23,11 +26,14 @@ export function useTags(): UseTagsResult {
                 credentials: 'include',
             });
 
-            if (!res.ok) {
-                throw new Error('タグ一覧の取得に失敗しました');
-            }
-
             const json = await res.json();
+            setStatus(res.status);
+
+            if (!res.ok) {
+                setError('タグ一覧の取得に失敗しました');
+                setTags([]);
+                return;
+            }
 
             setTags(json as TagResponse[]);
         } catch (err) {
@@ -43,5 +49,5 @@ export function useTags(): UseTagsResult {
         });
     }, [fetchTags]);
 
-    return { tags, isLoading, error, refetch: fetchTags };
+    return { tags, status, isLoading, error, refetch: fetchTags };
 }

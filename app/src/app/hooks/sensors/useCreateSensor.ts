@@ -1,11 +1,10 @@
 // hooks/useCreateSensor.ts
 import { useState, useCallback } from 'react';
-import { GetSensorResponse } from '@/backend/types/response/sensor/getSensorResponse';
 import { SensorRequest } from '@/backend/types/request/sensor/SensorRequest';
 import { SensorResponse } from '@/backend/types/response/sensor/sensorResponse';
 
 type UseCreateSensorResult = {
-    createSensor: (request: SensorRequest) => Promise<SensorResponse | null>;
+    createSensor: (request: SensorRequest) => Promise<{ sensor: SensorResponse | null; status: number }>;
     isCreating: boolean;
     error: string | null;
 };
@@ -15,7 +14,7 @@ export function useCreateSensor(): UseCreateSensorResult {
     const [isCreating, setIsCreating] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const createSensor = useCallback(async (request: SensorRequest): Promise<SensorResponse | null> => {
+    const createSensor = useCallback(async (request: SensorRequest): Promise<{ sensor: SensorResponse | null; status: number }> => {
         setIsCreating(true);
         setError(null);
 
@@ -27,17 +26,18 @@ export function useCreateSensor(): UseCreateSensorResult {
                 body: JSON.stringify(request),
             });
 
-            if (!res.ok) {
-                throw new Error('センサーの登録に失敗しました');
-            }
-
             const json = await res.json();
             console.log(json);
 
-            return json.data as SensorResponse;
+            if (!res.ok) {
+                setError('センサーの登録に失敗しました');
+                return { sensor: null, status: res.status };
+            }
+
+            return { sensor: json.data as SensorResponse, status: res.status };
         } catch (err) {
             setError(err instanceof Error ? err.message : 'センサーの登録に失敗しました');
-            return null;
+            return { sensor: null, status: 500 };
         } finally {
             setIsCreating(false);
         }

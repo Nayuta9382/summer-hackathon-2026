@@ -1,9 +1,10 @@
+// hooks/useCreateTag.ts
 import { useState, useCallback } from 'react';
 import { TagResponse } from '@/backend/types/response/tag/tagResponse';
 import { AddTagRequest } from '@/backend/types/request/tag/TagRequest';
 
 type UseCreateTagResult = {
-    createTag: (request: AddTagRequest) => Promise<TagResponse | null>;
+    createTag: (request: AddTagRequest) => Promise<{ tag: TagResponse | null; status: number }>;
     isCreating: boolean;
     error: string | null;
 };
@@ -13,7 +14,7 @@ export function useCreateTag(): UseCreateTagResult {
     const [isCreating, setIsCreating] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const createTag = useCallback(async (request: AddTagRequest): Promise<TagResponse | null> => {
+    const createTag = useCallback(async (request: AddTagRequest): Promise<{ tag: TagResponse | null; status: number }> => {
         setIsCreating(true);
         setError(null);
 
@@ -25,16 +26,18 @@ export function useCreateTag(): UseCreateTagResult {
                 body: JSON.stringify(request),
             });
 
-            if (!res.ok) {
-                throw new Error('タグの作成に失敗しました');
-            }
-
             const json = await res.json();
             console.log(json.data);
-            return json as TagResponse;
+
+            if (!res.ok) {
+                setError('タグの作成に失敗しました');
+                return { tag: null, status: res.status };
+            }
+
+            return { tag: json.data as TagResponse, status: res.status };
         } catch (err) {
             setError(err instanceof Error ? err.message : 'タグの作成に失敗しました');
-            return null;
+            return { tag: null, status: 500 };
         } finally {
             setIsCreating(false);
         }
