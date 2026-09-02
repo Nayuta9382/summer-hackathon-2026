@@ -20,7 +20,9 @@ export function useSensor(sensorId: number): UseSensorResult {
         setError(null);
 
         try {
-            const res = await fetch(`/api/sensors/${sensorId}`);
+            const res = await fetch(`/api/sensors/${sensorId}`, {
+                credentials: 'include',
+            });
 
             if (!res.ok) {
                 throw new Error('センサー情報の取得に失敗しました');

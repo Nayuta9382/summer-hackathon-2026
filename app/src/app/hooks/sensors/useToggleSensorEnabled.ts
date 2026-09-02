@@ -19,6 +19,7 @@ export function useToggleSensorEnabled(): UseToggleSensorEnabledResult {
         try {
             const res = await fetch(`/api/sensors/${sensorId}/change`, {
                 method: 'PUT',
+                credentials: 'include',
             });
 
             if (!res.ok) {
