@@ -1,5 +1,7 @@
 // Slack に通知を送信するための共通処理。
-// Bot Token を優先し、未設定なら従来の Incoming Webhook を使う。
+// 1) DM 通知: Slack user ID を使って conversations.open -> chat.postMessage
+// 2) チャンネル通知: SLACK_CHANNEL_ID を使って chat.postMessage
+// 3) 既存の Webhook 設定: フォールバックとして利用
 
 import { slackBotToken, slackChannelId, slackeWebhookUrl } from '../config/slack';
 
@@ -11,6 +13,8 @@ type SlackApiResponse = {
     };
 };
 
+// Slack user ID (例: U1234567890) を受け取り、そのユーザーへの DM を送る。
+// まず conversations.open で DM チャネルを開いてから、chat.postMessage でメッセージを送る。
 export async function sendSlackDmToUser(slackUserId: string, message: string) {
     if (!slackBotToken) {
         throw new Error('SLACK_BOT_TOKENが設定されていません');
