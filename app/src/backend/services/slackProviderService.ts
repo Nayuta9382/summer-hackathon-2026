@@ -1,4 +1,10 @@
-import { insertSlackProvider, selectSlackProviderByUserId, activateNotificationProvider, deactivateSlackProvidersByUserId } from '../repositories/slackProviderRepository';
+import {
+    insertSlackProvider,
+    selectSlackProviderByUserId,
+    activateNotificationProvider,
+    deactivateSlackProvidersByUserId,
+    selectActiveSlackProviderIdByUserId,
+} from '../repositories/slackProviderRepository';
 import { slackProviderParams } from '../types/dbparams/slackProvider/slackProviderParams';
 
 // Slackプロバイダーを登録し、プロバイダーのオブジェクトを返す
@@ -24,4 +30,9 @@ export async function upsertSlackProvider(userId: number, slackProviderId: strin
     }
 
     return await createSlackProvider(userId, slackProviderId);
+}
+
+// ユーザーIDに紐づく有効なSlackユーザーIDを取得する（存在しなければnull）
+export async function getActiveSlackProviderId(userId: number): Promise<string | null> {
+    return await selectActiveSlackProviderIdByUserId(userId);
 }
