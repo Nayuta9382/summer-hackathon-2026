@@ -3,15 +3,20 @@ import { createToken, verifyToken } from './jwtService';
 import { SessionPayload } from './jwtType';
 import { LoginRequest, LoginRequestSchema, LoginResult } from '../types/request/auth/LoginRequest';
 import { verifyPassword } from './passwordService';
-import { getUserByName } from '../services/usersService';
+import { getUserById, getUserByName } from '../services/usersService';
 
-// リクエストボディのバリデーション → ログイン処理 →
-// 成功時はJWTセッションの発行(cookieセット)まで行う
+// 認証失敗時のレスポンス
+export const AUTH_ERROR_RESPONSE = {
+    code: 'UNAUTHORIZED',
+    message: '認証に失敗しました。再度ログインしてください。',
+    status: 401,
+} as const;
+
+// ログイン処理
 export async function handleLogin(rawBody: unknown): Promise<LoginResult> {
-    // バリデーションを行う
+    // 1. リクエストのバリデーション
     const parsed = LoginRequestSchema.safeParse(rawBody);
 
-    // バリデーションの結果が正しくない場合は該当する情報をreturnする
     if (!parsed.success) {
         const { fieldErrors } = parsed.error.flatten();
 
@@ -26,22 +31,22 @@ export async function handleLogin(rawBody: unknown): Promise<LoginResult> {
         };
     }
 
-    // ログイン処理を実行する
+    // 2. ログイン処理
     const loginResult: LoginResult = await login(parsed.data);
 
-    // ログイン成功時はjwtをcookieにセットする
+    // 3. ログイン成功時に JWT を発行して cookie に保存
     if (loginResult.ok) {
         await createSession(loginResult.userId, loginResult.userName);
     }
+
     return loginResult;
 }
 
-// ログイン処理
+// ログイン認証の本体
 async function login(request: LoginRequest): Promise<LoginResult> {
-    // メールアドレスからユーザーを検索する
+    // 1. ユーザー名でユーザーを検索
     const user = await getUserByName(request.userName);
 
-    // ユーザが存在しない
     if (!user) {
         return {
             ok: false,
@@ -53,7 +58,7 @@ async function login(request: LoginRequest): Promise<LoginResult> {
         };
     }
 
-    // パスワードを検証する
+    // 2. パスワード検証
     const isPasswordValid = await verifyPassword(request.password, user.passwordHash);
 
     if (!isPasswordValid) {
@@ -70,15 +75,45 @@ async function login(request: LoginRequest): Promise<LoginResult> {
     return { ok: true, userId: user.userId, userName: user.userName };
 }
 
-//  JWTを発行してcookieにセットする
+// JWT を発行して cookie に保存
 export async function createSession(userId: number, userName: string): Promise<void> {
     const token = await createToken({ userId, userName });
     await setJwtCookie(token);
 }
-// cookieからセッション（JWT）を検証しペイロードを取得する
-export async function ValidateSession(): Promise<SessionPayload | null> {
-    const token = await getJwtCookie();
-    if (!token) return null;
 
+// cookie から JWT を取得し、署名・期限を検証して payload を返す
+export async function ValidateSession(tokenOverride?: string | null): Promise<SessionPayload | null> {
+    const token = tokenOverride ?? (await getJwtCookie());
+
+    if (!token) {
+        return null;
+    }
+
+    // jwtService 側で署名・有効期限の確認をしている前提
     return verifyToken(token);
+}
+
+// 認証済みユーザーか確認する
+// - JWT の存在確認
+// - JWT の userId を取得
+// - DB にそのユーザーが存在するか確認
+export async function authorizeRequest(tokenOverride?: string | null): Promise<number | null> {
+    const payload = await ValidateSession(tokenOverride);
+
+    if (!payload?.userId) {
+        return null;
+    }
+
+    try {
+        const user = await getUserById(payload.userId);
+
+        if (!user) {
+            return null;
+        }
+
+        return payload.userId;
+    } catch {
+        // DB エラー時も認証失敗扱い
+        return null;
+    }
 }
