@@ -6,7 +6,7 @@ import { SensorDetectionHistoryParams } from '../types/dbparams/history/sensorDe
 import { SensorRequest, SensorRequestSchema } from '../types/request/sensor/SensorRequest';
 import { GetSensorResponse } from '../types/response/sensor/getSensorsResponse';
 import { SensorResponse } from '../types/response/sensor/sensorResponse';
-import { getTagByUserId } from './tagService';
+import { addTag, getTagByUserId } from './tagService';
 import createError from 'http-errors';
 import { UpdateSensorRequest } from '../types/request/sensor/updateSensorRequest';
 import { UpdateSensorResponse } from '../types/response/sensor/updateSensorResponse';
@@ -27,6 +27,19 @@ export async function addSensor(userId: number, rawBody: SensorRequest): Promise
     // センサー本体を登録して、生成されたsensorIdを取得する
     const newSensor = await insertSensor({ userId, sensorName: sensor.sensorName, url: sensor.url });
 
+    // センサに紐づくタグを登録する
+    await insertSensorTags(newSensor.sensorId, tag.tagId);
+
+    // タグ情報を取得する(本来はセンサIDから取得する処理書くべきだが今回は省略)
+    const sensorData = await selectSensorWithTagsBySensorId(newSensor.sensorId);
+
+    const newTags: { tagId: number; tagName: string }[] = sensorData
+        .filter((row): row is typeof row & { tagId: number; tagName: string } => row.tagId !== null && row.tagName !== null)
+        .map((row) => ({
+            tagId: row.tagId,
+            tagName: row.tagName,
+        }));
+
     const sensorResponse: SensorResponse = {
         sensorId: newSensor.sensorId,
         sensorName: newSensor.sensorName,
@@ -35,9 +48,10 @@ export async function addSensor(userId: number, rawBody: SensorRequest): Promise
         delFlag: newSensor.delFlag,
         createdAt: newSensor.createdAt,
         updatedAt: newSensor.updatedAt,
-        tags,
+        tags: newTags,
     };
 
+    console.log(sensorResponse);
     return sensorResponse;
 }
 
