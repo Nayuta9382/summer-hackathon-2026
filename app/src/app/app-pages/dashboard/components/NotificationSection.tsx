@@ -1,8 +1,12 @@
+'use client';
+
+import { useState } from 'react';
 import type { Tag as SensorTag } from '@/app/mocks/sensors';
 import type { GetSensorResponse } from '@/backend/types/response/sensor/getSensorResponse';
 import Button from '@/components/base/Button';
 import Tag from '@/components/base/Tag';
 import { StatusIcon } from './SensorCardParts';
+import { useReadSensorDetectionHistories } from '@/app/hooks/useReadSensorDetectionHistories';
 
 interface Props {
     sensors: GetSensorResponse[];
@@ -34,10 +38,39 @@ function formatDetectedAt(date: Date): string {
 }
 
 export default function NotificationSection({ sensors, tagMap, onConfirm, onOpen }: Props) {
+    const { readSensorDetectionHistories, isReading } = useReadSensorDetectionHistories();
+    const [confirmingId, setConfirmingId] = useState<number | null>(null);
+    const [confirmingAll, setConfirmingAll] = useState(false);
+
     // 未読データがあるセンサーだけを通知対象にする
     const unreadSensors = sensors.filter((s) => s.unreadDetectedAts.length > 0);
 
     if (unreadSensors.length === 0) return null;
+
+    const handleConfirm = async (sensor: GetSensorResponse) => {
+        setConfirmingId(sensor.sensorId);
+
+        const { status } = await readSensorDetectionHistories(sensor.sensorId);
+
+        setConfirmingId(null);
+
+        if (status !== 200) return;
+
+        onConfirm(sensor);
+    };
+
+    const handleConfirmAll = async () => {
+        setConfirmingAll(true);
+
+        for (const sensor of unreadSensors) {
+            const { status } = await readSensorDetectionHistories(sensor.sensorId);
+            if (status === 200) {
+                onConfirm(sensor);
+            }
+        }
+
+        setConfirmingAll(false);
+    };
 
     return (
         <section className="rounded-2xl border border-background-200 bg-background-50 overflow-hidden">
@@ -47,6 +80,11 @@ export default function NotificationSection({ sensors, tagMap, onConfirm, onOpen
                 </span>
                 <h2 className="font-heading font-extrabold text-base md:text-lg text-foreground-950">通知ありセンサー</h2>
                 <span className="flex items-center justify-center min-w-[24px] h-6 px-2 rounded-full bg-accent-500 text-white text-xs font-extrabold font-label">{unreadSensors.length}</span>
+
+                <Button variant="outline" size="sm" className="ml-auto" disabled={confirmingAll} onClick={handleConfirmAll}>
+                    <i className="ri-check-double-line" />
+                    {confirmingAll ? '処理中...' : 'すべて既読にする'}
+                </Button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 p-3 md:p-4">
@@ -56,6 +94,7 @@ export default function NotificationSection({ sensors, tagMap, onConfirm, onOpen
                     const tone = isDetecting ? 'border-orange-200 bg-orange-50/60' : 'border-amber-200 bg-amber-50/60';
                     const label = isDetecting ? '検知中' : '未確認';
                     const labelCls = isDetecting ? 'bg-orange-500 text-white' : 'bg-amber-500 text-white';
+                    const isConfirming = (isReading && confirmingId === s.sensorId) || confirmingAll;
 
                     return (
                         <div
@@ -90,13 +129,14 @@ export default function NotificationSection({ sensors, tagMap, onConfirm, onOpen
                                 <Button
                                     variant="outline"
                                     size="sm"
+                                    disabled={isConfirming}
                                     onClick={(e) => {
                                         e.stopPropagation();
-                                        onConfirm(s);
+                                        handleConfirm(s);
                                     }}
                                 >
                                     <i className="ri-check-line" />
-                                    既読にする
+                                    {isConfirming ? '処理中...' : '既読にする'}
                                 </Button>
                             </div>
                         </div>
