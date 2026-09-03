@@ -55,3 +55,28 @@ export async function selectDetectionHistoriesBySensorIds(sensorIds: number[]): 
     // DBのカラム名はinterceptorでcamelCaseに変換される
     return rows as unknown as SensorDetectionHistoryParams[];
 }
+
+// 指定センサーIDに紐づく未読の検知履歴をすべて既読にする（read_atを現在時刻でUPDATE）
+export async function markSensorDetectionHistoriesAsRead(sensorId: number): Promise<SensorDetectionHistory[]> {
+    const pool = await getPool();
+
+    const query = sql.unsafe`
+        UPDATE sensor_detection_histories
+        SET
+            read_at = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE sensor_id = ${sensorId}
+            AND read_at IS NULL
+        RETURNING
+            detection_id,
+            sensor_id,
+            detected_at,
+            read_at,
+            created_at,
+            updated_at
+    `;
+
+    const rows = await pool.any(query);
+
+    return rows as unknown as SensorDetectionHistory[];
+}
