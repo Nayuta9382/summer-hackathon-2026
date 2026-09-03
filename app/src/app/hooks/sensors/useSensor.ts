@@ -1,5 +1,5 @@
 // hooks/useSensor.ts
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { GetSensorResponse } from '@/backend/types/response/sensor/getSensorResponse';
 
 type UseSensorResult = {
@@ -16,9 +16,13 @@ export function useSensor(sensorId: number): UseSensorResult {
     const [status, setStatus] = useState<number | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    const isFirstFetch = useRef(true);
 
     const fetchSensor = useCallback(async () => {
-        setIsLoading(true);
+        // 初回のみローディング表示(既読化・トグル後などのrefetchでのチラつき防止)
+        if (isFirstFetch.current) {
+            setIsLoading(true);
+        }
         setError(null);
 
         try {
@@ -40,6 +44,7 @@ export function useSensor(sensorId: number): UseSensorResult {
             setError(err instanceof Error ? err.message : 'センサー情報の取得に失敗しました');
         } finally {
             setIsLoading(false);
+            isFirstFetch.current = false;
         }
     }, [sensorId]);
 
