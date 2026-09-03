@@ -1,10 +1,11 @@
-import type { GetSensorResponse } from '@/backend/types/response/sensor/getSensorResponse';
+import type { GetSensorResponse } from '@/backend/types/response/sensor/getSensorsResponse';
 import type { TagResponse } from '@/backend/types/response/tag/tagResponse';
 import type { SensorStatus } from '@/backend/types/sensorStatus';
 import type { Tag as SensorTag } from '@/app/mocks/sensors';
 
 export interface NotificationEntry {
     id: string;
+    detectionId: number;
     sensorId: number;
     sensorName: string;
     sensorUrl: string | null;
@@ -32,11 +33,12 @@ export function buildNotifications(sensors: GetSensorResponse[]): NotificationEn
     sensors.forEach((s) => {
         const tagIds = s.tags.map((t) => t.tagId);
 
-        const pushEntry = (rawDate: Date, confirmed: boolean) => {
+        const pushEntry = (detectionId: number, rawDate: Date, confirmed: boolean) => {
             const date = new Date(rawDate);
             const { time, date: dateStr } = formatDetectedAt(date);
             list.push({
-                id: `${s.sensorId}-${date.getTime()}-${confirmed ? 'read' : 'unread'}`,
+                id: `${s.sensorId}-${detectionId}`,
+                detectionId,
                 sensorId: s.sensorId,
                 sensorName: s.sensorName,
                 sensorUrl: s.url,
@@ -49,8 +51,8 @@ export function buildNotifications(sensors: GetSensorResponse[]): NotificationEn
             });
         };
 
-        s.readDetectedAts.forEach((d) => pushEntry(d, true));
-        s.unreadDetectedAts.forEach((d) => pushEntry(d, false));
+        s.readDetections?.forEach((d) => pushEntry(d.detectionId, d.detectedAt, true));
+        s.unreadDetections?.forEach((d) => pushEntry(d.detectionId, d.detectedAt, false));
     });
 
     return list.sort((a, b) => b.time.localeCompare(a.time));

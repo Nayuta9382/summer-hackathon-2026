@@ -96,6 +96,7 @@ function groupSensorsWithTags(rows: SensorWithTagsParams[]): Map<number, GetSens
 }
 
 // 検知履歴を既読/未読に振り分けて、sensorMap内の各センサーに詰める
+// 検知履歴を既読/未読に振り分けて、sensorMap内の各センサーに詰める
 function applyDetectionHistories(sensorMap: Map<number, GetSensorResponse>, histories: SensorDetectionHistoryParams[]): void {
     for (const history of histories) {
         const sensor = sensorMap.get(history.sensorId);
@@ -108,8 +109,16 @@ function applyDetectionHistories(sensorMap: Map<number, GetSensorResponse>, hist
 
         if (history.readAt != null) {
             sensor.readDetectedAts.push(detectedAt);
+
+            if (history.detectionId != null) {
+                (sensor.readDetections ??= []).push({ detectionId: history.detectionId, detectedAt });
+            }
         } else {
             sensor.unreadDetectedAts.push(detectedAt);
+
+            if (history.detectionId != null) {
+                (sensor.unreadDetections ??= []).push({ detectionId: history.detectionId, detectedAt });
+            }
         }
     }
 }

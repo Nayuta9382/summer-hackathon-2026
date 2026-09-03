@@ -6,6 +6,8 @@ interface Props {
     items: NotificationEntry[];
     tagMap: Record<string, SensorTag>;
     onOpen: (sensorId: number) => void;
+    onConfirm: (detectionId: number) => void;
+    confirmingDetectionId: number | null;
 }
 
 /** 日付ラベルに整形する */
@@ -26,7 +28,7 @@ function formatDate(dateStr: string): string {
     return `${y}年${m}月${day}日`;
 }
 
-export default function NotificationTimeline({ items, tagMap, onOpen }: Props) {
+export default function NotificationTimeline({ items, tagMap, onOpen, onConfirm, confirmingDetectionId }: Props) {
     if (items.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center py-16 text-center px-4">
@@ -65,7 +67,7 @@ export default function NotificationTimeline({ items, tagMap, onOpen }: Props) {
 
                     <div className="space-y-2.5">
                         {group.items.map((item) => (
-                            <NotificationItem key={item.id} item={item} tagMap={tagMap} onOpen={onOpen} />
+                            <NotificationItem key={item.id} item={item} tagMap={tagMap} onOpen={onOpen} onConfirm={onConfirm} isConfirming={confirmingDetectionId === item.detectionId} />
                         ))}
                     </div>
                 </section>

@@ -14,6 +14,7 @@ import { useSensors } from '@/app/hooks/sensors/useSensors';
 import { useTags } from '@/app/hooks/tags/useTags';
 import { useToggleSensorEnabled } from '@/app/hooks/sensors/useToggleSensorEnabled';
 import { useUpdateSensor } from '@/app/hooks/sensors/useUpdateSensor';
+import { useReadSensorDetectionHistories } from '@/app/hooks/useReadSensorDetectionHistories';
 import RadarVisual from '../components/RadarVisual';
 import DetectionHistory from '../components/DetectionHistory';
 import type { DetectionItem } from '../components/DetectionHistory';
@@ -55,6 +56,7 @@ function SensorDetailInner() {
     const { tags, isLoading: isTagsLoading, error: tagsError, refetch: refetchTags } = useTags();
     const { toggleSensorEnabled } = useToggleSensorEnabled();
     const { updateSensor, isUpdating } = useUpdateSensor();
+    const { readSensorDetectionHistories, isReading } = useReadSensorDetectionHistories();
 
     const [showEdit, setShowEdit] = useState(false);
 
@@ -90,9 +92,16 @@ function SensorDetailInner() {
         refetch();
     };
 
-    const handleConfirm = () => {
+    const handleConfirm = async () => {
         if (!sensor) return;
-        // TODO: 既読化APIを呼び出し、成功後にrefetch()する
+
+        const { status } = await readSensorDetectionHistories(sensor.sensorId);
+
+        if (status !== 200) {
+            toast.show('info', `${sensor.sensorName} の既読処理に失敗しました`);
+            return;
+        }
+
         toast.show('success', `${sensor.sensorName} の通知を既読にしました`);
         refetch();
     };
@@ -147,7 +156,7 @@ function SensorDetailInner() {
                         </span>
                         <h1 className="mt-4 font-heading font-black text-xl text-foreground-950">センサーが見つかりません</h1>
                         <p className="mt-1 text-sm text-foreground-600">選択したセンサーは削除されたか、存在しません</p>
-                        <Button className="mt-6" onClick={() => router.push('/')}>
+                        <Button className="mt-6" onClick={() => router.push('/app-pages/dashboard')}>
                             <i className="ri-arrow-left-line" />
                             一覧へ戻る
                         </Button>
@@ -174,7 +183,7 @@ function SensorDetailInner() {
                 <main className="flex-1 w-full max-w-[1200px] mx-auto px-4 md:px-6 py-5 md:py-8 space-y-5 md:space-y-6">
                     {/* 戻る + タイトル */}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                        <Button variant="ghost" size="sm" onClick={() => router.push('/')}>
+                        <Button variant="ghost" size="sm" onClick={() => router.push('/app-pages/dashboard')}>
                             <i className="ri-arrow-left-line" />
                             一覧へ戻る
                         </Button>
@@ -188,9 +197,9 @@ function SensorDetailInner() {
                                 {isDisabled ? '有効化' : '無効化'}
                             </Button>
                             {hasPending && (
-                                <Button variant="accent" onClick={handleConfirm}>
+                                <Button variant="accent" onClick={handleConfirm} disabled={isReading}>
                                     <i className="ri-check-double-line" />
-                                    既読にする
+                                    {isReading ? '処理中...' : '既読にする'}
                                 </Button>
                             )}
                         </div>

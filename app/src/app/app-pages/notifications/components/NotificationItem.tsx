@@ -1,4 +1,7 @@
+'use client';
+
 import type { Tag as SensorTag } from '@/app/mocks/sensors';
+import Button from '@/components/base/Button';
 import Tag from '@/components/base/Tag';
 import StatusIcon from './StatusIcon';
 import type { NotificationEntry } from '../notificationsData';
@@ -7,15 +10,17 @@ interface Props {
     item: NotificationEntry;
     tagMap: Record<string, SensorTag>;
     onOpen: (sensorId: number) => void;
+    onConfirm: (detectionId: number) => void;
+    isConfirming: boolean;
 }
 
-export default function NotificationItem({ item, tagMap, onOpen }: Props) {
+export default function NotificationItem({ item, tagMap, onOpen, onConfirm, isConfirming }: Props) {
     const isUnconfirmed = !item.confirmed;
     const tone = isUnconfirmed ? 'border-amber-200 bg-amber-50/50 hover:border-amber-300' : 'border-background-200 bg-background-50 hover:border-background-300';
 
     return (
-        <button
-            type="button"
+        <div
+            role="button"
             onClick={() => onOpen(item.sensorId)}
             className={`group flex w-full flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 border rounded-xl p-3.5 md:p-4 text-left transition-colors duration-150 cursor-pointer animate-slide-in ${tone}`}
         >
@@ -49,10 +54,26 @@ export default function NotificationItem({ item, tagMap, onOpen }: Props) {
                 </div>
             </div>
 
-            <span className="flex items-center gap-1 text-xs font-label font-bold text-foreground-400 shrink-0 transition-colors group-hover:text-primary-600 sm:ml-2">
-                詳細を見る
-                <i className="ri-arrow-right-s-line text-base" />
-            </span>
-        </button>
+            <div className="flex items-center gap-2 shrink-0 sm:ml-2">
+                {isUnconfirmed && (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={isConfirming}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onConfirm(item.detectionId);
+                        }}
+                    >
+                        <i className="ri-check-line" />
+                        {isConfirming ? '処理中...' : '既読にする'}
+                    </Button>
+                )}
+                <span className="flex items-center gap-1 text-xs font-label font-bold text-foreground-400 transition-colors group-hover:text-primary-600 whitespace-nowrap">
+                    詳細を見る
+                    <i className="ri-arrow-right-s-line text-base" />
+                </span>
+            </div>
+        </div>
     );
 }

@@ -1,6 +1,6 @@
 // hooks/useSensors.ts
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { GetSensorResponse } from '@/backend/types/response/sensor/getSensorResponse';
+import { GetSensorResponse } from '@/backend/types/response/sensor/getSensorsResponse';
 
 type UseSensorsResult = {
     sensors: GetSensorResponse[];
@@ -40,6 +40,7 @@ export function useSensors(): UseSensorsResult {
                 setSensors([]);
                 return;
             }
+            console.log(json);
 
             setSensors(json.data as GetSensorResponse[]);
         } catch (err) {
