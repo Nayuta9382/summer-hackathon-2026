@@ -19,6 +19,7 @@ import DetectionHistory from '../components/DetectionHistory';
 import type { DetectionItem } from '../components/DetectionHistory';
 import EditSensorModal from '../components/EditSensorModal';
 import StatusBadge from '../components/StatusBadge';
+import LoadingDots from '@/components/base/LoadingDots';
 
 const statusHex: Record<SensorStatus, string> = {
     NONE: '#10B981',
@@ -114,7 +115,7 @@ function SensorDetailInner() {
         refetch();
     };
 
-    if (isLoading || isTagsLoading) return <p>読み込み中...</p>;
+    if (isLoading || isTagsLoading) return <LoadingDots fullScreen label="読み込み中..." />;
 
     if (error || tagsError) {
         return (
