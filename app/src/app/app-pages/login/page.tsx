@@ -35,7 +35,7 @@ function LoginInner() {
 
         if (result.user) {
             toast.show('success', `${result.user.userName} さんとしてログインしました`);
-            router.push('/');
+            router.push('/app-pages/dashboard');
         } else {
             setError('ユーザー名またはパスワードが正しくありません');
         }
