@@ -1,16 +1,12 @@
+'use client';
+
 import Link from 'next/link';
+import { useUser } from '@/app/hooks/users/useUser';
 
 interface SidebarProps {
     unreadCount: number;
     activeNav: string;
 }
-
-// const navItems = [
-//     { key: 'dashboard', label: 'ダッシュボード', icon: 'ri-dashboard-3-line', to: '/' },
-//     { key: 'notifications', label: '通知', icon: 'ri-notification-3-line', to: '/notifications' },
-//     { key: 'settings', label: '設定', icon: 'ri-settings-3-line', to: '/settings' },
-//     { key: 'tutorial', label: 'チュートリアル', icon: 'ri-graduation-cap-line', to: '/tutorial' },
-// ];
 
 const navItems = [
     { key: 'dashboard', label: 'ダッシュボード', icon: 'ri-dashboard-3-line', to: '/app-pages/dashboard' },
@@ -22,7 +18,10 @@ const navItems = [
 export { navItems };
 
 export default function Sidebar({ unreadCount, activeNav }: SidebarProps) {
-    const currentUser = { name: '山田 太郎', email: 'taro@example.com' };
+    const { user } = useUser();
+
+    // ユーザー名の先頭2文字をアバターに表示(取得前は空表示)
+    const avatarLabel = user?.userName ? user.userName.slice(0, 2) : '';
 
     return (
         <aside className="hidden lg:flex flex-col w-[248px] shrink-0 bg-background-100/80 border-r border-background-200 h-[100dvh] sticky top-0">
@@ -74,7 +73,7 @@ export default function Sidebar({ unreadCount, activeNav }: SidebarProps) {
 
                 <p className="px-2 mb-2 text-[11px] font-label font-bold text-foreground-400 tracking-wide">その他</p>
                 <Link
-                    href="/about"
+                    href="/app-pages/about"
                     className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold text-foreground-600 hover:bg-background-200 hover:text-foreground-900 transition-colors duration-150 cursor-pointer"
                 >
                     <span className="flex items-center justify-center w-5 h-5 shrink-0">
@@ -87,13 +86,12 @@ export default function Sidebar({ unreadCount, activeNav }: SidebarProps) {
             {/* User */}
             <div className="p-3 border-t border-background-200">
                 <div className="flex items-center gap-3 px-2 py-2">
-                    <span className="flex items-center justify-center w-9 h-9 rounded-full bg-secondary-400 text-white font-label font-extrabold text-sm shrink-0">山田</span>
+                    <span className="flex items-center justify-center w-9 h-9 rounded-full bg-secondary-400 text-white font-label font-extrabold text-sm shrink-0">{avatarLabel}</span>
                     <div className="min-w-0 leading-tight">
-                        <p className="text-sm font-bold text-foreground-900 truncate">{currentUser.name}</p>
-                        <p className="text-[11px] text-foreground-500 truncate">{currentUser.email}</p>
+                        <p className="text-sm font-bold text-foreground-900 truncate">{user?.userName ?? '読み込み中...'}</p>
                     </div>
                     <Link
-                        href="/settings"
+                        href="/app-pages/settings"
                         aria-label="設定"
                         className="ml-auto flex items-center justify-center w-8 h-8 rounded-lg text-foreground-500 hover:bg-background-200 cursor-pointer transition-colors"
                     >

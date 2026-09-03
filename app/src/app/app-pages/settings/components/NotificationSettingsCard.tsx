@@ -34,7 +34,7 @@ const destTabs: { key: DestType; label: string; icon: string; hint: string }[] =
 export default function NotificationSettingsCard({ onSave }: Props) {
     const [sound, setSound] = useState(true);
     const [soundType, setSoundType] = useState('standard');
-    const [dest, setDest] = useState<DestType>('line');
+    const [dest, setDest] = useState<DestType>('slack');
     const [destValue, setDestValue] = useState('');
     const [connecting, setConnecting] = useState(false);
 

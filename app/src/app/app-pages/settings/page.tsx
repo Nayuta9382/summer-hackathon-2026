@@ -4,13 +4,29 @@ import { useMemo } from 'react';
 import Sidebar from '@/components/feature/Sidebar';
 import MobileTopBar from '@/components/feature/MobileTopBar';
 import { ToastProvider, useToast } from '@/components/base/Toast';
-import { sensors } from '@/app/mocks/sensors';
+import { useSensors } from '@/app/hooks/sensors/useSensors';
+import { useUser } from '@/app/hooks/users/useUser';
 import UserInfoCard from './components/UserInfoCard';
 import NotificationSettingsCard from './components/NotificationSettingsCard';
+import LoadingDots from '@/components/base/LoadingDots';
 
 function SettingsInner() {
     const toast = useToast();
-    const unreadCount = useMemo(() => sensors.filter((s) => s.status === 'detecting' || s.status === 'unconfirmed').length, []);
+    const { sensors } = useSensors();
+    const { user, isLoading, error, refetch } = useUser();
+
+    const unreadCount = useMemo(() => sensors.filter((s) => s.isEnabled && s.unreadDetectedAts.length > 0).length, [sensors]);
+
+    if (isLoading) return <LoadingDots fullScreen label="読み込み中..." />;
+
+    if (error || !user) {
+        return (
+            <div>
+                <p>{error ?? 'ユーザー情報が取得できませんでした'}</p>
+                <button onClick={() => refetch()}>再試行</button>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-[100dvh] flex bg-background-50">
@@ -27,7 +43,7 @@ function SettingsInner() {
                         <p className="mt-1 text-sm text-foreground-600">アカウント情報と通知の設定を管理できます</p>
                     </div>
 
-                    <UserInfoCard initialName="山田 太郎" onSave={({ name }) => toast.show('success', `${name} さんの情報を保存しました`)} />
+                    <UserInfoCard userName={user.userName} />
 
                     <NotificationSettingsCard onSave={({ dest }) => toast.show('success', `通知設定を保存しました（通知先: ${dest === 'slack' ? 'Slack' : 'LINE'}）`)} />
                 </main>
