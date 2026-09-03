@@ -154,9 +154,9 @@ function DashboardInner() {
 
                     <SummaryCards summary={summary} />
 
-                    <NotificationSection sensors={unreadSensors} tagMap={Ntagmap} onConfirm={handleNConfirm} onOpen={(s) => router.push(`/sensor/${s.sensorId}`)} />
+                    <NotificationSection sensors={unreadSensors} tagMap={Ntagmap} onConfirm={handleNConfirm} onOpen={(s) => router.push(`/app-pages/sensor/${s.sensorId}`)} />
 
-                    <SensorList sensors={NenabledSensors} tagMap={Ntagmap} onToggle={handleNToggle} onOpen={(s) => router.push(`/sensor/${s.sensorId}`)} />
+                    <SensorList sensors={NenabledSensors} tagMap={Ntagmap} onToggle={handleNToggle} onOpen={(s) => router.push(`/app-pages/sensor/${s.sensorId}`)} />
 
                     <DisabledSection sensors={disabledSensors} tagMap={Ntagmap} onEnable={handleNToggle} />
                 </main>
