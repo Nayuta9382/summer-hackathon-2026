@@ -16,6 +16,7 @@ import SummaryCards from './components/SummaryCards';
 import DisabledSection from './components/DisabledSection';
 import AddSensorModal from './components/AddSensorModal';
 import TagManagerModal from './components/TagManagerModal';
+import LoadingDots from '@/components/base/LoadingDots';
 
 function DashboardInner() {
     const toast = useToast();
@@ -92,7 +93,7 @@ function DashboardInner() {
         refetchTags();
     };
 
-    if (isLoading || isTagsLoading) return <p>読み込み中...</p>;
+    if (isLoading || isTagsLoading) return <LoadingDots fullScreen label="読み込み中..." />;
     if (error || tagsError) {
         return (
             <div>
@@ -154,9 +155,9 @@ function DashboardInner() {
 
                     <SummaryCards summary={summary} />
 
-                    <NotificationSection sensors={unreadSensors} tagMap={Ntagmap} onConfirm={handleNConfirm} onOpen={(s) => router.push(`/sensor/${s.sensorId}`)} />
+                    <NotificationSection sensors={unreadSensors} tagMap={Ntagmap} onConfirm={handleNConfirm} onOpen={(s) => router.push(`/app-pages/sensor/${s.sensorId}`)} />
 
-                    <SensorList sensors={NenabledSensors} tagMap={Ntagmap} onToggle={handleNToggle} onOpen={(s) => router.push(`/sensor/${s.sensorId}`)} />
+                    <SensorList sensors={NenabledSensors} tagMap={Ntagmap} onToggle={handleNToggle} onOpen={(s) => router.push(`/app-pages/sensor/${s.sensorId}`)} />
 
                     <DisabledSection sensors={disabledSensors} tagMap={Ntagmap} onEnable={handleNToggle} />
                 </main>
