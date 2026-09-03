@@ -117,3 +117,14 @@ export async function authorizeRequest(tokenOverride?: string | null): Promise<n
         return null;
     }
 }
+
+// proxyが認証後に設定したリクエストヘッダーからユーザーIDを取得する
+export function getUserIdFromRequest(request: Request): number | null {
+    const userId = Number(request.headers.get('x-user-id'));
+
+    if (!Number.isInteger(userId) || userId <= 0) {
+        return null;
+    }
+
+    return userId;
+}

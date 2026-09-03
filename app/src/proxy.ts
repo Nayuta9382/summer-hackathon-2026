@@ -46,12 +46,15 @@ export async function proxy(request: NextRequest) {
         );
     }
 
-    // 認証成功時は次の route に userId を渡す
-    const response = NextResponse.next();
-    console.log('成功');
-    response.headers.set('x-user-id', String(userId));
+    // 認証成功時は次の route に userId をリクエストヘッダーとして渡す
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('x-user-id', String(userId));
 
-    return response;
+    return NextResponse.next({
+        request: {
+            headers: requestHeaders,
+        },
+    });
 }
 
 export const config = {

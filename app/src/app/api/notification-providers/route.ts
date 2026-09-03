@@ -1,13 +1,17 @@
 // app/api/notification-providers/route.ts
 
+import { AUTH_ERROR_RESPONSE, getUserIdFromRequest } from '@/backend/auth/authService';
 import { getActiveSlackProviderId } from '@/backend/services/slackProviderService';
 import { NextResponse } from 'next/server';
 
-// ユーザーIDから有効な通知プロバイダーが登録されているかどうかを返すAPI
+// 認証済みユーザーに有効な通知プロバイダーが登録されているかどうかを返すAPI
 // 現状DBから判定できるのはSlackのみ。LINEは未実装のため固定でfalseを返す
-export async function GET() {
-    // TODO: 本来は認証情報から取得する。現状は仮の固定値
-    const userId = 3;
+export async function GET(request: Request) {
+    const userId = getUserIdFromRequest(request);
+
+    if (!userId) {
+        return NextResponse.json(AUTH_ERROR_RESPONSE, { status: AUTH_ERROR_RESPONSE.status });
+    }
 
     // 有効なSlackプロバイダーIDを取得し、存在するかどうかで判定する
     const slackProviderId = await getActiveSlackProviderId(userId);
