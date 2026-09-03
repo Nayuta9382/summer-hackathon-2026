@@ -21,7 +21,7 @@ export function useToast() {
 
 const styleMap: Record<ToastType, { icon: string; iconWrap: string; border: string; bg: string; text: string }> = {
     success: { icon: 'ri-checkbox-circle-fill', iconWrap: 'bg-emerald-500 text-white', border: 'border-emerald-300', bg: 'bg-emerald-50', text: 'text-emerald-900' },
-    info: { icon: 'ri-information-fill', iconWrap: 'bg-primary-500 text-white', border: 'border-primary-300', bg: 'bg-primary-50', text: 'text-primary-900' },
+    info: { icon: 'ri-information-fill', iconWrap: 'bg-primary-500 text-white', border: 'border-primary-300', bg: 'bg-background-50', text: 'text-primary-700' },
     warning: { icon: 'ri-error-warning-fill', iconWrap: 'bg-amber-500 text-white', border: 'border-amber-300', bg: 'bg-amber-50', text: 'text-amber-900' },
 };
 
