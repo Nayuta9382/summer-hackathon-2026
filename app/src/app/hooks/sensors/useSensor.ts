@@ -10,6 +10,8 @@ type UseSensorResult = {
     refetch: () => void;
 };
 
+const POLLING_INTERVAL_MS = 1000; // 1秒ごとに再取得
+
 // センサーIDを指定して単一のセンサー情報を取得するフック
 export function useSensor(sensorId: number): UseSensorResult {
     const [sensor, setSensor] = useState<GetSensorResponse | null>(null);
@@ -19,7 +21,6 @@ export function useSensor(sensorId: number): UseSensorResult {
     const isFirstFetch = useRef(true);
 
     const fetchSensor = useCallback(async () => {
-        // 初回のみローディング表示(既読化・トグル後などのrefetchでのチラつき防止)
         if (isFirstFetch.current) {
             setIsLoading(true);
         }
@@ -28,6 +29,7 @@ export function useSensor(sensorId: number): UseSensorResult {
         try {
             const res = await fetch(`/api/sensors/${sensorId}`, {
                 credentials: 'include',
+                cache: 'no-store',
             });
 
             const json = await res.json();
@@ -49,9 +51,17 @@ export function useSensor(sensorId: number): UseSensorResult {
     }, [sensorId]);
 
     useEffect(() => {
+        isFirstFetch.current = true;
+
         queueMicrotask(() => {
             fetchSensor();
         });
+
+        const timer = setInterval(() => {
+            fetchSensor();
+        }, POLLING_INTERVAL_MS);
+
+        return () => clearInterval(timer);
     }, [fetchSensor]);
 
     return { sensor, status, isLoading, error, refetch: fetchSensor };
