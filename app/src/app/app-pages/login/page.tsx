@@ -92,7 +92,7 @@ function LoginInner() {
 
                 <p className="mt-5 text-center text-sm text-foreground-600">
                     アカウントをお持ちでない方は{' '}
-                    <Link href="/register" className="font-bold text-primary-600 hover:text-primary-700">
+                    <Link href="/app-pages/register" className="font-bold text-primary-600 hover:text-primary-700">
                         新規登録
                     </Link>
                 </p>

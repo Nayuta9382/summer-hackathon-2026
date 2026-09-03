@@ -41,3 +41,80 @@ export async function selectUserByName(userName: string): Promise<User | null> {
     const user = await pool.maybeOne(query);
     return user as User | null;
 }
+
+// user_id をもとに、パスワードハッシュを含むユーザー情報を取得する
+export async function selectUserWithPasswordById(userId: number): Promise<User | null> {
+    const pool = await getPool();
+    const query = sql.unsafe`SELECT
+                   user_id AS "userId",
+                   user_name AS "userName",
+                   password_hash AS "passwordHash",
+                   notification_sound_id AS "notificationSoundId",
+                   is_sound_enabled AS "isSoundEnabled",
+                   created_at AS "createdAt",
+                   updated_at AS "updatedAt"
+                   FROM "users"
+                   WHERE user_id = ${userId}`;
+    const user = await pool.maybeOne(query);
+    return user as User | null;
+}
+
+// user_id を指定して、パスワード(ハッシュ済み)のみを更新する
+export async function updateUserPassword(userId: number, passwordHash: string): Promise<User | null> {
+    const pool = await getPool();
+    const query = sql.unsafe`
+        UPDATE "users"
+        SET
+            password_hash = ${passwordHash},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE user_id = ${userId}
+        RETURNING
+            user_id AS "userId",
+            user_name AS "userName",
+            password_hash AS "passwordHash",
+            notification_sound_id AS "notificationSoundId",
+            is_sound_enabled AS "isSoundEnabled",
+            created_at AS "createdAt",
+            updated_at AS "updatedAt"
+    `;
+    const user = await pool.maybeOne(query);
+    return user as User | null;
+}
+
+// user_name が既に使われているか確認する
+export async function existsUserByName(userName: string): Promise<boolean> {
+    const pool = await getPool();
+    const query = sql.unsafe`
+        SELECT 1
+        FROM "users"
+        WHERE user_name = ${userName}
+        LIMIT 1
+    `;
+    const row = await pool.maybeOne(query);
+    return row != null;
+}
+
+// ユーザーを新規登録する
+export async function insertUser(userName: string, passwordHash: string): Promise<User> {
+    const pool = await getPool();
+    const query = sql.unsafe`
+        INSERT INTO "users" (
+            user_name,
+            password_hash
+        )
+        VALUES (
+            ${userName},
+            ${passwordHash}
+        )
+        RETURNING
+            user_id AS "userId",
+            user_name AS "userName",
+            password_hash AS "passwordHash",
+            notification_sound_id AS "notificationSoundId",
+            is_sound_enabled AS "isSoundEnabled",
+            created_at AS "createdAt",
+            updated_at AS "updatedAt"
+    `;
+    const user = await pool.one(query);
+    return user as unknown as User;
+}

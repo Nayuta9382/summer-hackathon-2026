@@ -42,6 +42,7 @@ export async function selectDetectionHistoriesBySensorIds(sensorIds: number[]): 
 
     const query = sql.unsafe`
         SELECT
+            detection_id,
             sensor_id,
             detected_at,
             read_at
@@ -79,4 +80,29 @@ export async function markSensorDetectionHistoriesAsRead(sensorId: number): Prom
     const rows = await pool.any(query);
 
     return rows as unknown as SensorDetectionHistory[];
+}
+
+// 指定した検知履歴ID(detectionId)を1件だけ既読にする（read_atを現在時刻でUPDATE）
+export async function markSensorDetectionHistoryAsReadById(detectionId: number): Promise<SensorDetectionHistory | null> {
+    const pool = await getPool();
+
+    const query = sql.unsafe`
+        UPDATE sensor_detection_histories
+        SET
+            read_at = CURRENT_TIMESTAMP,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE detection_id = ${detectionId}
+            AND read_at IS NULL
+        RETURNING
+            detection_id,
+            sensor_id,
+            detected_at,
+            read_at,
+            created_at,
+            updated_at
+    `;
+
+    const row = await pool.maybeOne(query);
+
+    return row as unknown as SensorDetectionHistory | null;
 }

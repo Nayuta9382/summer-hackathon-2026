@@ -1,5 +1,5 @@
 import { handleApiError } from '@/backend/errors/errors';
-import { getUserById } from '@/backend/services/usersService';
+import { getUserById, changeUserPassword } from '@/backend/services/usersService';
 import { UsersResponse } from '@/backend/types/response/users/usersResponse';
 
 export async function GET(request: Request) {
@@ -13,6 +13,27 @@ export async function GET(request: Request) {
         const userResponse: UsersResponse = await getUserById(userId);
 
         return Response.json(userResponse);
+    } catch (err) {
+        return handleApiError(err);
+    }
+}
+
+// パスワードを変更する
+export async function PUT(request: Request) {
+    try {
+        const userIdHeader = request.headers.get('x-user-id');
+        const userId = Number(userIdHeader);
+
+        const body = await request.json();
+        const { currentPassword, newPassword } = body;
+
+        if (typeof currentPassword !== 'string' || typeof newPassword !== 'string') {
+            return Response.json({ error: 'invalid request body' }, { status: 400 });
+        }
+
+        await changeUserPassword(userId, currentPassword, newPassword);
+
+        return Response.json({ success: true });
     } catch (err) {
         return handleApiError(err);
     }

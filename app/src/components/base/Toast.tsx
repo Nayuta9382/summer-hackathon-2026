@@ -19,10 +19,10 @@ export function useToast() {
     return useContext(ToastContext);
 }
 
-const styleMap: Record<ToastType, { icon: string; accent: string }> = {
-    success: { icon: 'ri-checkbox-circle-fill', accent: 'text-emerald-500' },
-    info: { icon: 'ri-information-fill', accent: 'text-primary-500' },
-    warning: { icon: 'ri-error-warning-fill', accent: 'text-amber-500' },
+const styleMap: Record<ToastType, { icon: string; iconWrap: string; border: string; bg: string; text: string }> = {
+    success: { icon: 'ri-checkbox-circle-fill', iconWrap: 'bg-emerald-500 text-white', border: 'border-emerald-300', bg: 'bg-emerald-50', text: 'text-emerald-900' },
+    info: { icon: 'ri-information-fill', iconWrap: 'bg-primary-500 text-white', border: 'border-primary-300', bg: 'bg-background-50', text: 'text-primary-700' },
+    warning: { icon: 'ri-error-warning-fill', iconWrap: 'bg-amber-500 text-white', border: 'border-amber-300', bg: 'bg-amber-50', text: 'text-amber-900' },
 };
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -40,15 +40,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     return (
         <ToastContext.Provider value={{ show }}>
             {children}
-            <div className="fixed top-5 right-5 z-[100] flex flex-col gap-2.5 w-[340px] max-w-[calc(100vw-2.5rem)]">
+            <div className="fixed top-[calc(3.5rem+0.75rem)] right-3 lg:top-5 lg:right-5 z-[100] flex flex-col gap-2.5 w-[340px] max-w-[calc(100vw-1.5rem)]">
                 {toasts.map((t) => {
                     const s = styleMap[t.type];
                     return (
-                        <div key={t.id} className="flex items-start gap-3 bg-background-50 border border-background-200 rounded-xl px-4 py-3 shadow-soft animate-toast-in">
-                            <span className={`flex items-center justify-center w-5 h-5 shrink-0 ${s.accent}`}>
-                                <i className={`${s.icon} text-lg`} />
+                        <div key={t.id} className={`flex items-start gap-3 ${s.bg} border-2 ${s.border} rounded-xl px-4 py-3 shadow-lg animate-toast-in`}>
+                            <span className={`flex items-center justify-center w-7 h-7 rounded-full shrink-0 ${s.iconWrap}`}>
+                                <i className={`${s.icon} text-base`} />
                             </span>
-                            <p className="text-sm text-foreground-800 font-medium leading-snug pt-0.5">{t.message}</p>
+                            <p className={`text-sm font-bold leading-snug pt-0.5 ${s.text}`}>{t.message}</p>
                         </div>
                     );
                 })}

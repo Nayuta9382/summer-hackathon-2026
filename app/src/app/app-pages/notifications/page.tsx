@@ -4,24 +4,34 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/feature/Sidebar';
 import MobileTopBar from '@/components/feature/MobileTopBar';
-import { ToastProvider } from '@/components/base/Toast';
+import { ToastProvider, useToast } from '@/components/base/Toast';
+import Button from '@/components/base/Button';
 import { Input, Select } from '@/components/base/Form';
 import type { Tag as SensorTag } from '@/app/mocks/sensors';
 import { useSensors } from '@/app/hooks/sensors/useSensors';
 import { useTags } from '@/app/hooks/tags/useTags';
+import { useReadSensorDetectionHistories } from '@/app/hooks/useReadSensorDetectionHistories';
+import { useReadSensorDetectionHistory } from '@/app/hooks/useReadSensorDetectionHistory';
 import NotificationTimeline from './components/NotificationTimeline';
 import { buildNotifications, buildTagMap } from './notificationsData';
+import LoadingDots from '@/components/base/LoadingDots';
 
 type StatusFilter = 'all' | 'unconfirmed' | 'confirmed';
 
 function NotificationsInner() {
     const router = useRouter();
+    const toast = useToast();
     const [query, setQuery] = useState('');
     const [activeTag, setActiveTag] = useState<string | null>(null);
     const [status, setStatus] = useState<StatusFilter>('all');
 
     const { sensors, isLoading, error, refetch } = useSensors();
     const { tags, isLoading: isTagsLoading, error: tagsError, refetch: refetchTags } = useTags();
+    const { readSensorDetectionHistories } = useReadSensorDetectionHistories();
+    const { readSensorDetectionHistory } = useReadSensorDetectionHistory();
+
+    const [confirmingDetectionId, setConfirmingDetectionId] = useState<number | null>(null);
+    const [confirmingAll, setConfirmingAll] = useState(false);
 
     const allItems = useMemo(() => buildNotifications(sensors), [sensors]);
     const tagMap = useMemo<Record<string, SensorTag>>(() => buildTagMap(tags), [tags]);
@@ -46,7 +56,48 @@ function NotificationsInner() {
     const unconfirmedCount = allItems.filter((n) => !n.confirmed).length;
     const confirmedCount = totalCount - unconfirmedCount;
 
-    if (isLoading || isTagsLoading) return <p>読み込み中...</p>;
+    // 現在表示中(フィルタ後)の未確認通知に含まれるセンサーID一覧(重複なし)
+    const unconfirmedSensorIdsInView = useMemo(() => {
+        const ids = new Set<number>();
+        filtered.forEach((n) => {
+            if (!n.confirmed) ids.add(n.sensorId);
+        });
+        return Array.from(ids);
+    }, [filtered]);
+
+    // 個別の既読(1件のみ)
+    const handleConfirm = async (detectionId: number) => {
+        setConfirmingDetectionId(detectionId);
+
+        const { status: resStatus } = await readSensorDetectionHistory(detectionId);
+
+        setConfirmingDetectionId(null);
+
+        if (resStatus !== 200) {
+            toast.show('info', '既読処理に失敗しました');
+            return;
+        }
+
+        toast.show('success', '通知を既読にしました');
+        refetch();
+    };
+
+    // すべて既読(センサー単位で一括)
+    const handleConfirmAll = async () => {
+        if (unconfirmedSensorIdsInView.length === 0) return;
+
+        setConfirmingAll(true);
+
+        for (const sensorId of unconfirmedSensorIdsInView) {
+            await readSensorDetectionHistories(sensorId);
+        }
+
+        setConfirmingAll(false);
+        toast.show('success', '表示中の通知をすべて既読にしました');
+        refetch();
+    };
+
+    if (isLoading || isTagsLoading) return <LoadingDots fullScreen label="読み込み中..." />;
 
     if (error || tagsError) {
         return (
@@ -134,8 +185,12 @@ function NotificationsInner() {
                                         <option value="confirmed">確認済みのみ</option>
                                     </Select>
                                 </div>
-                                <div className="flex items-center gap-2 sm:ml-auto">
+                                <div className="flex items-center gap-3 sm:ml-auto">
                                     <span className="text-xs font-label font-bold text-foreground-400">{filtered.length}件表示中</span>
+                                    <Button variant="outline" size="sm" disabled={confirmingAll || unconfirmedSensorIdsInView.length === 0} onClick={handleConfirmAll}>
+                                        <i className="ri-check-double-line" />
+                                        {confirmingAll ? '処理中...' : 'すべて既読にする'}
+                                    </Button>
                                 </div>
                             </div>
 
@@ -173,7 +228,13 @@ function NotificationsInner() {
                         </div>
 
                         <div className="p-4 md:p-6">
-                            <NotificationTimeline items={filtered} tagMap={tagMap} onOpen={(sensorId) => router.push(`/app-pages/sensor/${sensorId}`)} />
+                            <NotificationTimeline
+                                items={filtered}
+                                tagMap={tagMap}
+                                onOpen={(sensorId) => router.push(`/app-pages/sensor/${sensorId}`)}
+                                onConfirm={handleConfirm}
+                                confirmingDetectionId={confirmingDetectionId}
+                            />
                         </div>
                     </section>
                 </main>

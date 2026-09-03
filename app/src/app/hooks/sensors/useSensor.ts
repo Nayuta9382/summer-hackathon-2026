@@ -21,7 +21,6 @@ export function useSensor(sensorId: number): UseSensorResult {
     const isFirstFetch = useRef(true);
 
     const fetchSensor = useCallback(async () => {
-        // 初回のみローディング表示(ポーリング時のチラつき防止)
         if (isFirstFetch.current) {
             setIsLoading(true);
         }

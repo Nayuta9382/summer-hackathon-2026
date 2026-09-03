@@ -156,7 +156,7 @@ function SensorDetailInner() {
                         </span>
                         <h1 className="mt-4 font-heading font-black text-xl text-foreground-950">センサーが見つかりません</h1>
                         <p className="mt-1 text-sm text-foreground-600">選択したセンサーは削除されたか、存在しません</p>
-                        <Button className="mt-6" onClick={() => router.push('/')}>
+                        <Button className="mt-6" onClick={() => router.push('/app-pages/dashboard')}>
                             <i className="ri-arrow-left-line" />
                             一覧へ戻る
                         </Button>
@@ -183,7 +183,7 @@ function SensorDetailInner() {
                 <main className="flex-1 w-full max-w-[1200px] mx-auto px-4 md:px-6 py-5 md:py-8 space-y-5 md:space-y-6">
                     {/* 戻る + タイトル */}
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                        <Button variant="ghost" size="sm" onClick={() => router.push('/')}>
+                        <Button variant="ghost" size="sm" onClick={() => router.push('/app-pages/dashboard')}>
                             <i className="ri-arrow-left-line" />
                             一覧へ戻る
                         </Button>

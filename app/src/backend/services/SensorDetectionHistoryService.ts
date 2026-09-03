@@ -1,4 +1,4 @@
-import { insertSensorDetectionHistory, markSensorDetectionHistoriesAsRead } from '../repositories/SensorDetectionHistoryRepository';
+import { insertSensorDetectionHistory, markSensorDetectionHistoriesAsRead, markSensorDetectionHistoryAsReadById } from '../repositories/SensorDetectionHistoryRepository';
 import { SensorDetectionHistory } from '../types/db/sensorDetectionHistory';
 
 // センサー検知履歴を登録する
@@ -13,4 +13,11 @@ export async function readSensorDetectionHistories(sensorId: number): Promise<Se
     const sensorDetectionHistories = await markSensorDetectionHistoriesAsRead(sensorId);
 
     return sensorDetectionHistories;
+}
+
+// 指定した検知履歴ID(detectionId)を1件だけ既読にする
+export async function readSensorDetectionHistoryById(detectionId: number): Promise<SensorDetectionHistory | null> {
+    const sensorDetectionHistory = await markSensorDetectionHistoryAsReadById(detectionId);
+
+    return sensorDetectionHistory;
 }
