@@ -15,7 +15,8 @@ function SettingsInner() {
     const { sensors } = useSensors();
     const { user, isLoading, error, refetch } = useUser();
 
-    const unreadCount = useMemo(() => sensors.filter((s) => s.isEnabled && s.unreadDetectedAts.length > 0).length, [sensors]);
+    // サイドバー・トップバーの通知件数は「未読の検知件数」の合計で統一する
+    const unreadCount = useMemo(() => sensors.reduce((sum, s) => (s.isEnabled ? sum + s.unreadDetectedAts.length : sum), 0), [sensors]);
 
     if (isLoading) return <LoadingDots fullScreen label="読み込み中..." />;
 

@@ -9,6 +9,7 @@ import Button from '@/components/base/Button';
 import { useSensors } from '@/app/hooks/sensors/useSensors';
 import { useTags } from '@/app/hooks/tags/useTags';
 import { useToggleSensorEnabled } from '@/app/hooks/sensors/useToggleSensorEnabled';
+import { useReadSensorDetectionHistories } from '@/app/hooks/useReadSensorDetectionHistories';
 import type { GetSensorResponse } from '@/backend/types/response/sensor/getSensorResponse';
 import SensorList from './components/SensorList';
 import NotificationSection from './components/NotificationSection';
@@ -29,6 +30,7 @@ function DashboardInner() {
     const { sensors: Nsensors, isLoading, error, refetch } = useSensors();
     const { tags: Ntags, isLoading: isTagsLoading, error: tagsError, refetch: refetchTags } = useTags();
     const { toggleSensorEnabled } = useToggleSensorEnabled();
+    const { readSensorDetectionHistories } = useReadSensorDetectionHistories();
 
     // 有効なセンサだけに絞り込み
     const NenabledSensors = useMemo(() => Nsensors.filter((s) => s.isEnabled), [Nsensors]);
@@ -38,6 +40,9 @@ function DashboardInner() {
 
     // 未読データがあるセンサーのみ通知対象
     const unreadSensors = useMemo(() => NenabledSensors.filter((s) => s.unreadDetectedAts.length > 0), [NenabledSensors]);
+
+    // サイドバー・トップバーの通知件数は「未読の検知件数」の合計で統一する
+    const unreadDetectionCount = useMemo(() => NenabledSensors.reduce((sum, s) => sum + s.unreadDetectedAts.length, 0), [NenabledSensors]);
 
     // TagResponse[] を Record<string, SensorTag> 形式に変換
     const Ntagmap = useMemo(() => Object.fromEntries(Ntags.map((t) => [String(t.tagId), { id: String(t.tagId), name: t.tagName, color: t.colorCode }])), [Ntags]);
@@ -70,10 +75,15 @@ function DashboardInner() {
         refetch();
     };
 
-    // GetSensorResponse用の既読化ハンドラ
+    // GetSensorResponse用の既読化ハンドラ(センサー単位で一括既読)
     const handleNConfirm = async (sensor: GetSensorResponse) => {
-        // TODO: 既読化APIを呼び出し、成功後にrefetch()する
-        // 例: await confirmDetection(sensor.sensorId);
+        const { status } = await readSensorDetectionHistories(sensor.sensorId);
+
+        if (status !== 200) {
+            toast.show('info', `${sensor.sensorName} の既読処理に失敗しました`);
+            return;
+        }
+
         toast.show('success', `${sensor.sensorName} の通知を既読にしました`);
         refetch();
     };
@@ -113,7 +123,7 @@ function DashboardInner() {
 
     return (
         <div className="min-h-[100dvh] flex bg-background-50">
-            <Sidebar unreadCount={unreadSensors.length} activeNav="dashboard" />
+            <Sidebar unreadCount={unreadDetectionCount} activeNav="dashboard" />
 
             <div className="flex-1 min-w-0 flex flex-col">
                 {/* Mobile top bar */}
@@ -121,7 +131,7 @@ function DashboardInner() {
                     brand
                     title="SensorHub"
                     activeNav="dashboard"
-                    unreadCount={unreadSensors.length}
+                    unreadCount={unreadDetectionCount}
                     action={
                         <button
                             type="button"
