@@ -47,14 +47,12 @@ export default function SensorCard({ sensor, tagMap, onToggle, onOpen }: Props) 
             }`}
             onClick={isDisabled ? undefined : () => onOpen(sensor)}
         >
-            <div className="flex items-center gap-3 lg:w-[320px] shrink-0">
+            <div className="flex items-start gap-3 lg:w-[320px] shrink-0">
                 <StatusIcon sensor={sensor} />
-                <div className="min-w-0 flex items-center gap-2 flex-wrap">
-                    <div className="min-w-0">
-                        <p className="font-heading font-extrabold text-[15px] text-foreground-950 truncate">{sensor.sensorName}</p>
-                        <p className="mt-0.5 text-xs text-foreground-500 font-mono">{sensor.url ?? '—'}</p>
-                    </div>
-                    <div className="flex items-center gap-1.5 flex-wrap">
+                <div className="min-w-0">
+                    <p className="font-heading font-extrabold text-[15px] text-foreground-950 truncate">{sensor.sensorName}</p>
+                    <p className="mt-0.5 text-xs text-foreground-500 font-mono">{sensor.url ?? '—'}</p>
+                    <div className="mt-1.5 flex items-center gap-1.5 flex-wrap">
                         {sensor.tags.length === 0 ? (
                             <span className="text-xs text-foreground-400">タグなし</span>
                         ) : (

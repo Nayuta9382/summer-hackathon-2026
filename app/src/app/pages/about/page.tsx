@@ -1,10 +1,11 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/feature/Sidebar';
 import MobileTopBar from '@/components/feature/MobileTopBar';
 import Button from '@/components/base/Button';
-import { sensors } from '@/app/mocks/sensors';
+import { useSensors } from '@/app/hooks/sensors/useSensors';
 import { conceptItems, featureItems, scenarioItems, audienceItems, stepsData, type AboutItem } from './aboutData';
 
 const accentMap: Record<AboutItem['accent'], { bubble: string; badge: string }> = {
@@ -63,8 +64,10 @@ function ScenarioCard({ item }: { item: AboutItem }) {
 }
 
 export default function About() {
-    const unreadCount = sensors.filter((s) => s.status === 'detecting' || s.status === 'unconfirmed').length;
     const router = useRouter();
+    const { sensors } = useSensors();
+    // サイドバー・トップバーの通知件数は「未読の検知件数」の合計で統一する
+    const unreadCount = useMemo(() => sensors.reduce((sum, s) => (s.isEnabled ? sum + s.unreadDetectedAts.length : sum), 0), [sensors]);
 
     return (
         <div className="min-h-[100dvh] flex bg-background-50">
@@ -97,11 +100,11 @@ export default function About() {
                             </p>
 
                             <div className="mt-6 flex flex-col sm:flex-row items-center gap-2.5">
-                                <Button size="lg" onClick={() => router.push('/sensors')}>
+                                <Button size="lg" onClick={() => router.push('/app-pages/dashboard')}>
                                     <i className="ri-dashboard-3-line" />
                                     ダッシュボードへ
                                 </Button>
-                                <Button size="lg" variant="outline" onClick={() => router.push('/tutorial')}>
+                                <Button size="lg" variant="outline" onClick={() => router.push('/app-pages/tutorial')}>
                                     <i className="ri-graduation-cap-line" />
                                     使い方を学ぶ
                                 </Button>
@@ -200,11 +203,11 @@ export default function About() {
                                 まずはダッシュボードでセンサーの状態を確認してみましょう。チュートリアルで手順も丁寧に解説しています。
                             </p>
                             <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-2.5">
-                                <Button size="lg" className="bg-white text-primary-700 hover:bg-white" onClick={() => router.push('/sensors')}>
+                                <Button size="lg" className="bg-white text-primary-700 hover:bg-white" onClick={() => router.push('/app-pages/dashboard')}>
                                     <i className="ri-dashboard-3-line" />
                                     ダッシュボードを見る
                                 </Button>
-                                <Button size="lg" variant="ghost" className="text-white hover:bg-white/10" onClick={() => router.push('/tutorial')}>
+                                <Button size="lg" variant="ghost" className="text-white hover:bg-white/10" onClick={() => router.push('/app-pages/tutorial')}>
                                     <i className="ri-graduation-cap-line" />
                                     チュートリアルへ
                                 </Button>

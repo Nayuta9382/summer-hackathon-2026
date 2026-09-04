@@ -191,8 +191,8 @@ function SensorDetailInner() {
                             一覧へ戻る
                         </Button>
                         <div className="flex items-center gap-3 sm:ml-auto flex-wrap">
-                            <Button variant="outline" onClick={() => setShowEdit(true)}>
-                                <i className="ri-pencil-line" />
+                            <Button onClick={() => setShowEdit(true)}>
+                                <i className="ri-add-line" />
                                 編集
                             </Button>
                             <Button variant="outline" onClick={handleToggle}>

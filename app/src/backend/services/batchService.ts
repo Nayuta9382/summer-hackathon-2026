@@ -43,12 +43,19 @@ export async function runSensorBatch() {
         }),
     );
 }
-
 function formatDetectedAt(date: Date): string {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    const hh = String(date.getHours()).padStart(2, '0');
-    const mm = String(date.getMinutes()).padStart(2, '0');
-    return `${y}-${m}-${d} ${hh}:${mm}`;
+    const formatter = new Intl.DateTimeFormat('ja-JP', {
+        timeZone: 'Asia/Tokyo',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+    });
+
+    const parts = formatter.formatToParts(date);
+    const get = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
+
+    return `${get('year')}-${get('month')}-${get('day')} ${get('hour')}:${get('minute')}`;
 }
