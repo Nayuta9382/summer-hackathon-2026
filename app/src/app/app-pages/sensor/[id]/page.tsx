@@ -10,6 +10,7 @@ import Tag from '@/components/base/Tag';
 import type { Tag as SensorTag } from '@/app/mocks/sensors';
 import type { SensorStatus } from '@/backend/types/sensorStatus';
 import { useSensor } from '@/app/hooks/sensors/useSensor';
+import { useDetectionAlertSound } from '@/app/hooks/sensors/useDetectionAlertSound';
 import { useSensors } from '@/app/hooks/sensors/useSensors';
 import { useTags } from '@/app/hooks/tags/useTags';
 import { useToggleSensorEnabled } from '@/app/hooks/sensors/useToggleSensorEnabled';
@@ -57,6 +58,8 @@ function SensorDetailInner() {
     const { toggleSensorEnabled } = useToggleSensorEnabled();
     const { updateSensor, isUpdating } = useUpdateSensor();
     const { readSensorDetectionHistories, isReading } = useReadSensorDetectionHistories();
+
+    useDetectionAlertSound(sensor?.status ?? 'NONE', sensor ? !sensor.isEnabled : true);
 
     const [showEdit, setShowEdit] = useState(false);
 
