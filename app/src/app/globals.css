@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import './theme.css';
+@import 'remixicon/fonts/remixicon.css';
 
 @theme inline {
     --color-background: var(--background);
